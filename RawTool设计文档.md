@@ -1,4 +1,4 @@
-# RawTool
+# RawViewer
 显示RGB和YUV裸数据图片格式；后续增加格式转换功能。
 候选名
 - RYUViewer
