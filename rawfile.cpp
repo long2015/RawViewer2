@@ -2,8 +2,12 @@
 #include <assert.h>
 #include <string.h>
 #include <color_space.h>
-#include "libavformat/avformat.h"
-
+extern "C"
+{
+    #include <libavutil/pixdesc.h>
+    #include "libavformat/avformat.h"
+    #include <libavutil/imgutils.h>
+}
 
 CRawFile::CRawFile()
 {
@@ -72,41 +76,27 @@ bool CRawFile::ParserFileName(std::string filename, ImageInfo &imageInfo)
         return false;
     }
 
-    if( std::string("nv21") == color_str )
+    AVPixelFormat color_space = av_get_pix_fmt(color_str);
+    if( color_space == AV_PIX_FMT_NONE )
     {
-        imageInfo.color_space = AV_PIX_FMT_NV21;
-        m_data_len = width*height*3/2;
-    }
-    else if( std::string("nv12") == color_str )
-    {
-        imageInfo.color_space = AV_PIX_FMT_NV12;
-        m_data_len = width*height*3/2;
-    }
-    else if( std::string("i420") == color_str )
-    {
-        imageInfo.color_space = AV_PIX_FMT_YUV420P;
-        m_data_len = width*height*3/2;
-    }
-    else if( std::string("rgb24") == color_str )
-    {
-        imageInfo.color_space = AV_PIX_FMT_RGB24;
-        m_data_len = width*height*3;
-    }
-    else if( std::string("bgr24") == color_str )
-    {
-        imageInfo.color_space = AV_PIX_FMT_BGR24;
-        m_data_len = width*height*3;
-    }
-    else
-    {
-        printf("Not support color space:%s\n", color_str);
-        return false;
+        if (std::string("i420") == color_str)
+        {
+            color_space = AV_PIX_FMT_YUV420P;
+        }
+        else
+        {
+            printf("Not support color space:%s\n", color_str);
+            return false;
+        }
     }
 
     imageInfo.width = width;
     imageInfo.height = height;
+    imageInfo.color_space = color_space;
+    m_cur_color = color_space;
+
+    m_data_len = av_image_get_buffer_size(color_space, width, height, 1);
     m_rgb_data_len = width*height*3;
-    m_cur_color = imageInfo.color_space;
 
     return true;
 }
