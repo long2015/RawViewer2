@@ -5,6 +5,9 @@
 #include <QResizeEvent>
 #include "rawfile.h"
 #include <QKeyEvent>
+#include <QContextMenuEvent>
+#include <QLabel>
+#include <QAction>
 
 namespace Ui {
 class frame;
@@ -21,9 +24,12 @@ public:
 protected:
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event);
 
 private:
     void scaledImage(QSize size);
+    void createStateBar();
+    void createRightMenu();
 
 private:
     Ui::frame *ui;
@@ -33,6 +39,10 @@ private:
 
     QPixmap      m_pixmap;
     QImage       m_image;
+
+    QLabel*      m_stateLabel;
+
+    QMenu*       m_popMenu;
 };
 
 #endif // FRAME_H

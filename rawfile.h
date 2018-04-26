@@ -8,6 +8,7 @@ struct ImageInfo
     int width;
     int height;
     int color_space;
+    std::string colorstr;
 };
 
 class CRawFile
@@ -16,7 +17,7 @@ public:
     CRawFile();
     bool Open(std::string filename);
     bool Open(std::string filename, int width, int height, int color_space);
-    bool Reload(int color_space);
+    bool Reload(int color_space, int width = 0, int height = 0, int data_type = 0);
     bool GetImageInfo(ImageInfo& image_info);
 
     void* GetFrame();

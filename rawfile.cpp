@@ -30,25 +30,18 @@ bool CRawFile::Open(std::string filename)
     fread(m_data, m_data_len, 1, fp);
     fclose(fp);
 
-    Reload(m_cur_color);
+    Reload(m_image_info.color_space);
 
     return true;
 }
 
-bool CRawFile::Reload(int color_space)
+bool CRawFile::Reload(int color_space, int width, int height, int data_type)
 {
-    int ret =  YUVToRGB((unsigned char*)m_data, m_image_info.width, m_image_info.height, (AVPixelFormat)m_cur_color,
+    int ret =  YUVToRGB((unsigned char*)m_data, m_image_info.width, m_image_info.height, (AVPixelFormat)color_space,
              (unsigned char*)m_rgb_data);
 
-    if( m_cur_color == AV_PIX_FMT_RGB24 )
-    {
-        color_space = AV_PIX_FMT_BGR24;
-    }
-    else
-    {
-        color_space = AV_PIX_FMT_RGB24;
-    }
-    m_cur_color = color_space;
+    m_image_info.color_space = color_space;
+    m_image_info.colorstr = av_get_pix_fmt_name((AVPixelFormat)color_space);
 
     return ret == 0;
 }
@@ -93,7 +86,6 @@ bool CRawFile::ParserFileName(std::string filename, ImageInfo &imageInfo)
     imageInfo.width = width;
     imageInfo.height = height;
     imageInfo.color_space = color_space;
-    m_cur_color = color_space;
 
     m_data_len = av_image_get_buffer_size(color_space, width, height, 1);
     m_rgb_data_len = width*height*3;

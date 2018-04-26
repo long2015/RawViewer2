@@ -10,6 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle("RawViewer 2");
+    resize(1000, 600);
     setAcceptDrops(true);
 }
 
