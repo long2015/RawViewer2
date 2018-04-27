@@ -21,7 +21,7 @@ add_definitions(${MACROS_DEFINE})
 
 include_directories(${INCLUDE_DIR})
 
-add_executable(RawViewer2 ${SRC_FILES} ${UI_FILES})
+add_executable(RawViewer2 ${SRC_FILES} ${UI_FILES} myRC.rc)
 target_link_libraries(RawViewer2 swscale avformat avcodec avutil)
 
 qt5_use_modules(RawViewer2 Widgets)
