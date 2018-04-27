@@ -2,6 +2,7 @@
 #include "ui_frame.h"
 #include <assert.h>
 #include <QStatusBar>
+#include <QToolBar>
 #include <QMenu>
 
 extern "C"
@@ -21,6 +22,7 @@ frame::frame(QString filename, QWidget *parent) :
 
     //create state bar
     createStateBar();
+    createToolBar();
     createRightMenu();
 
     // load file
@@ -63,6 +65,17 @@ void frame::createStateBar()
 //    m_stateLabel->setAlignment(Qt::AlignHCenter);
     statusBar()->addWidget(m_stateLabel);
     statusBar()->setStyleSheet(QString("QStatusBar::item{border: 0px}"));
+}
+
+void frame::createToolBar()
+{
+    QAction* origAction= new QAction("原始大小");
+    QAction* winAction= new QAction("适合窗口");
+
+    QToolBar* toolBar = addToolBar(tr("&File"));
+    toolBar->addAction(origAction);
+    toolBar->addAction(winAction);
+
 }
 
 void frame::createRightMenu()

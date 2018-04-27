@@ -28,6 +28,7 @@ protected:
 
 private:
     void scaledImage(QSize size);
+    void createToolBar();
     void createStateBar();
     void createRightMenu();
 
