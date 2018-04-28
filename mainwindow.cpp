@@ -3,6 +3,7 @@
 #include "frame.h"
 #include <QMimeData>
 #include <QDebug>
+#include <QtWidgets/QMdiSubWindow>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -11,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("RawViewer 2");
-    resize(1000, 600);
+    resize(1100, 800);
     setAcceptDrops(true);
 }
 
@@ -26,7 +27,9 @@ void MainWindow::dropEvent(QDropEvent *event)
     qDebug("filename:%s\n", filename.toStdString().c_str());
 
     frame* pFrame = new frame(filename, this);
-    pFrame->show();
+    QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
+    subWindow->resize(pFrame->size());
+    subWindow->show();
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -35,7 +38,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
     event->acceptProposedAction();
 }
 
-void MainWindow::on_action_triggered()
+void MainWindow::resizeEvent(QResizeEvent *event)
 {
-
+    ui->mdiArea->resize(event->size());
 }

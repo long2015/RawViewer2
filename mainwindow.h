@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QDropEvent>
 #include <QDragEnterEvent>
+#include <QtWidgets/QMdiArea>
+#include <QResizeEvent>
 
 
 namespace Ui {
@@ -21,9 +23,7 @@ public:
 protected:
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
-
-private slots:
-    void on_action_triggered();
+    void resizeEvent(QResizeEvent *event);
 
 private:
     Ui::MainWindow *ui;

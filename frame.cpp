@@ -18,7 +18,6 @@ frame::frame(QString filename, QWidget *parent) :
     ui->setupUi(this);
     QString name = filename.split("/").back();
     setWindowTitle(name);
-    ui->label->setGeometry(0, 0, 0, 0);
 
     //create state bar
     createStateBar();
@@ -37,8 +36,6 @@ frame::frame(QString filename, QWidget *parent) :
     memcpy(m_image.bits(), m_rawFile.GetFrame(), m_rawFile.GetFrameLen());
 
     resize(m_imageInfo.width, m_imageInfo.height);
-    //ui->label->resize(this->size());
-    //ui->label->setPixmap(QPixmap::fromImage(m_image));
 }
 
 frame::~frame()
@@ -60,9 +57,6 @@ void frame::scaledImage(QSize size)
 void frame::createStateBar()
 {
     m_stateLabel = new QLabel();
-
-//    m_stateLabel->setMaximumSize(m_stateLabel->sizeHint());
-//    m_stateLabel->setAlignment(Qt::AlignHCenter);
     statusBar()->addWidget(m_stateLabel);
     statusBar()->setStyleSheet(QString("QStatusBar::item{border: 0px}"));
 }

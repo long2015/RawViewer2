@@ -13,7 +13,18 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QMdiArea" name="mdiArea">
+    <property name="geometry">
+     <rect>
+      <x>-1</x>
+      <y>-1</y>
+      <width>1351</width>
+      <height>771</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -28,6 +39,8 @@
      <string>文件</string>
     </property>
     <addaction name="action"/>
+    <addaction name="action_8"/>
+    <addaction name="separator"/>
     <addaction name="action_2"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -37,17 +50,24 @@
     <addaction name="actionYUV_RGB"/>
     <addaction name="actionRGB_YUV"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
-    <property name="title">
-     <string>格式</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menu_4">
     <property name="title">
-     <string>关于</string>
+     <string>帮助</string>
     </property>
     <addaction name="action_3"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout_Qt"/>
     <addaction name="action_RawTool"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>窗口</string>
+    </property>
+    <addaction name="actionMDI"/>
+    <addaction name="action_4"/>
+    <addaction name="separator"/>
+    <addaction name="action_6"/>
+    <addaction name="action_7"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -57,22 +77,22 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action">
    <property name="text">
-    <string>打开</string>
+    <string>打开文件</string>
    </property>
   </action>
   <action name="action_2">
    <property name="text">
-    <string>关闭</string>
+    <string>退出</string>
    </property>
   </action>
   <action name="actionYUV_RGB">
    <property name="text">
-    <string>转RGB</string>
+    <string>转为RGB</string>
    </property>
   </action>
   <action name="actionRGB_YUV">
    <property name="text">
-    <string>转YUV</string>
+    <string>转为YUV</string>
    </property>
   </action>
   <action name="action_3">
@@ -82,7 +102,37 @@
   </action>
   <action name="action_RawTool">
    <property name="text">
-    <string>关于RawTool</string>
+    <string>关于RawTool 2</string>
+   </property>
+  </action>
+  <action name="actionMDI">
+   <property name="text">
+    <string>MDI模式</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>浮动窗口</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>平铺</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="text">
+    <string>最大化</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="text">
+    <string>打开文件夹</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt5</string>
    </property>
   </action>
  </widget>
