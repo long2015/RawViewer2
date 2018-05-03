@@ -30,11 +30,11 @@ private:
 
 private:
     ImageInfo m_image_info;
-    void*   m_data;       //åŸå›¾åƒæ•°æ®
+    void*   m_data;       //Ô­Í¼ÏñÊı¾İ
     int     m_data_len;
     int     m_cur_color;
 
-    void*   m_rgb_data;   //ç”¨äºæ˜¾ç¤ºçš„rgbå›¾åƒæ•°æ®
+    void*   m_rgb_data;   //ÓÃÓÚÏÔÊ¾µÄrgbÍ¼ÏñÊı¾İ
     int     m_rgb_data_len;
 };
 

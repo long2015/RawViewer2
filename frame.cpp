@@ -50,7 +50,7 @@ void frame::scaledImage(QSize size)
 
     ui->label->setPixmap(QPixmap::fromImage(image));
     char state[128];
-    snprintf(state, sizeof(state), "Info: %dx%d, %s, char", m_imageInfo.width, m_imageInfo.height, m_imageInfo.colorstr.c_str());
+    sprintf(state, "Info: %dx%d, %s, char", m_imageInfo.width, m_imageInfo.height, m_imageInfo.colorstr.c_str());
     m_stateLabel->setText(state);
 }
 
@@ -63,8 +63,8 @@ void frame::createStateBar()
 
 void frame::createToolBar()
 {
-    QAction* origAction= new QAction("åŽŸå§‹å¤§å°");
-    QAction* winAction= new QAction("é€‚åˆçª—å£");
+    QAction* origAction= new QAction("Ô­Ê¼´óÐ¡");
+    QAction* winAction= new QAction("ÊÊºÏ´°¿Ú");
 
     QToolBar* toolBar = addToolBar(tr("&File"));
     toolBar->addAction(origAction);
@@ -78,14 +78,14 @@ void frame::createRightMenu()
     QAction*     m_BGRAction;
     QAction*     m_NV21Action;
 
-    m_RGBAction = new QAction(tr("RGB"), this);  //åˆ›å»ºæ–°çš„èœå•é¡¹
-    m_RGBAction->setCheckable(true);//è®¾ç½®å¯é€‰
-    m_RGBAction->setChecked(true);//è®¾ç½®æ˜¯å¦é€‰ä¸­
+    m_RGBAction = new QAction(tr("RGB"), this);  //´´½¨ÐÂµÄ²Ëµ¥Ïî
+    m_RGBAction->setCheckable(true);//ÉèÖÃ¿ÉÑ¡
+    m_RGBAction->setChecked(true);//ÉèÖÃÊÇ·ñÑ¡ÖÐ
 
-    //connect(firstChannel, SIGNAL(triggered()), this, SLOT(firstChannelSlot()));       //è¯¥èœå•é¡¹çš„è¿žæŽ¥ä¿¡å·å’Œæ§½
-    m_BGRAction = new QAction(tr("BGR"), this);  //åˆ›å»ºæ–°çš„èœå•é¡¹
+    //connect(firstChannel, SIGNAL(triggered()), this, SLOT(firstChannelSlot()));       //¸Ã²Ëµ¥ÏîµÄÁ¬½ÓÐÅºÅºÍ²Û
+    m_BGRAction = new QAction(tr("BGR"), this);  //´´½¨ÐÂµÄ²Ëµ¥Ïî
 
-    m_NV21Action = new QAction(tr("NV21"), this);  //åˆ›å»ºæ–°çš„èœå•é¡¹
+    m_NV21Action = new QAction(tr("NV21"), this);  //´´½¨ÐÂµÄ²Ëµ¥Ïî
 
     m_popMenu = new QMenu();
     m_popMenu->addAction(m_RGBAction);
@@ -112,7 +112,7 @@ void frame::keyPressEvent(QKeyEvent *event)
 {
     if( event->key() == Qt::Key_Space )
     {
-        //int color = AV_PIX_FMT_RGB24ï¼›
+        //int color = AV_PIX_FMT_RGB24£»
         m_rawFile.Reload(0);
 
         m_image = QImage(m_imageInfo.width, m_imageInfo.height, QImage::Format_RGB888);
