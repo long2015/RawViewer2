@@ -41,7 +41,12 @@ private:
     QPixmap      m_pixmap;
     QImage       m_image;
 
-    QLabel*      m_stateLabel;
+    QLabel*      m_labelWidth;
+    QLabel*      m_labelHeight;
+    QLabel*      m_labelColor;
+
+    QLabel*      m_labelFrame;
+    QLabel*      m_labelFrameTotal;
 
     QMenu*       m_popMenu;
 };

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
-    <height>240</height>
+    <width>616</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,30 +15,103 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>321</width>
-      <height>211</height>
+      <width>461</width>
+      <height>321</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
     </property>
     <property name="text">
      <string/>
     </property>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>320</width>
-     <height>23</height>
-    </rect>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
    </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionplay"/>
+   <addaction name="separator"/>
+   <addaction name="actionprev"/>
+   <addaction name="actionnext"/>
+   <addaction name="actionfirst"/>
+   <addaction name="actionlast"/>
+   <addaction name="separator"/>
   </widget>
+  <action name="actionplay">
+   <property name="icon">
+    <iconset resource="toolbar.qrc">
+     <normaloff>:/toolbar/play</normaloff>:/toolbar/play</iconset>
+   </property>
+   <property name="text">
+    <string>play</string>
+   </property>
+  </action>
+  <action name="actionprev">
+   <property name="icon">
+    <iconset resource="toolbar.qrc">
+     <normaloff>:/toolbar/prev</normaloff>:/toolbar/prev</iconset>
+   </property>
+   <property name="text">
+    <string>prev</string>
+   </property>
+  </action>
+  <action name="actionnext">
+   <property name="icon">
+    <iconset resource="toolbar.qrc">
+     <normaloff>:/toolbar/next</normaloff>:/toolbar/next</iconset>
+   </property>
+   <property name="text">
+    <string>next</string>
+   </property>
+  </action>
+  <action name="actionfirst">
+   <property name="icon">
+    <iconset resource="toolbar.qrc">
+     <normaloff>:/toolbar/first</normaloff>:/toolbar/first</iconset>
+   </property>
+   <property name="text">
+    <string>first</string>
+   </property>
+  </action>
+  <action name="actionlast">
+   <property name="icon">
+    <iconset resource="toolbar.qrc">
+     <normaloff>:/toolbar/last</normaloff>:/toolbar/last</iconset>
+   </property>
+   <property name="text">
+    <string>last</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="toolbar.qrc"/>
+ </resources>
  <connections/>
 </ui>

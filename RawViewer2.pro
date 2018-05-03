@@ -44,3 +44,6 @@ HEADERS += \
 FORMS += \
         mainwindow.ui   \
         frame.ui
+
+RESOURCES += \
+    toolbar.qrc

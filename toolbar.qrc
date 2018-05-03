@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/toolbar">
+        <file>pause</file>
+        <file>play</file>
+        <file>stop</file>
+        <file>prev</file>
+        <file>next</file>
+        <file>first</file>
+        <file>last</file>
+    </qresource>
+</RCC>

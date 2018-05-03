@@ -28,6 +28,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 
     frame* pFrame = new frame(filename, this);
     QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
+//    if( pFrame->size() < QSize(320, 320) )
     subWindow->resize(pFrame->size());
     subWindow->show();
 }

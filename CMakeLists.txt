@@ -16,12 +16,14 @@ file(GLOB SRC_FILES "*.cpp")
 qt5_wrap_ui(UI_FILES frame.ui)
 qt5_wrap_ui(UI_FILES mainwindow.ui)
 
+set(RESOURCE toolbar.qrc)
+qt5_add_resources(RESOURCE_ADDED ${RESOURCE})
 
 add_definitions(${MACROS_DEFINE})
 
 include_directories(${INCLUDE_DIR})
 
-add_executable(RawViewer2 ${SRC_FILES} ${UI_FILES} myRC.rc)
+add_executable(RawViewer2 ${SRC_FILES} ${UI_FILES} myRC.rc ${RESOURCE})
 target_link_libraries(RawViewer2 swscale avformat avcodec avutil)
 
 qt5_use_modules(RawViewer2 Widgets)

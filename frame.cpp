@@ -24,6 +24,9 @@ frame::frame(QString filename, QWidget *parent) :
     createToolBar();
     createRightMenu();
 
+    int height = ui->toolBar->height() + statusBar()->height();
+    setMinimumSize(320, 320+height);
+
     // load file
     if( !m_rawFile.Open(filename.toStdString()) )
     {
@@ -45,31 +48,45 @@ frame::~frame()
 
 void frame::scaledImage(QSize size)
 {
+    int height = ui->toolBar->height() + statusBar()->height();
+    size.setHeight(size.height()- height);
+
     QImage image = m_image.scaled(size);
     ui->label->resize(size);
 
     ui->label->setPixmap(QPixmap::fromImage(image));
-    char state[128];
-    sprintf(state, "Info: %dx%d, %s, char", m_imageInfo.width, m_imageInfo.height, m_imageInfo.colorstr.c_str());
-    m_stateLabel->setText(state);
+    char buf[128];
+    sprintf(buf, "%d", m_imageInfo.width);
+    m_labelWidth->setText(buf);
+    sprintf(buf, "%d", m_imageInfo.height);
+    m_labelHeight->setText(buf);
+    m_labelColor->setText(m_imageInfo.colorstr.c_str());
+
+    m_labelFrame->setText("0");
+    m_labelFrameTotal->setText("1");
 }
 
 void frame::createStateBar()
 {
-    m_stateLabel = new QLabel();
-    statusBar()->addWidget(m_stateLabel);
-    statusBar()->setStyleSheet(QString("QStatusBar::item{border: 0px}"));
+    statusBar()->setStyleSheet(QString("QStatusBar::item{border: 2px}"));
+
+    m_labelWidth = new QLabel();
+    m_labelHeight = new QLabel();
+    m_labelColor = new QLabel();
+    statusBar()->addWidget(m_labelWidth);
+    statusBar()->addWidget(m_labelHeight);
+    statusBar()->addWidget(m_labelColor);
+
+    m_labelFrame = new QLabel();
+    m_labelFrameTotal = new QLabel();
+    statusBar()->addPermanentWidget(m_labelFrame);
+    statusBar()->addPermanentWidget(m_labelFrameTotal);
 }
 
 void frame::createToolBar()
 {
-    QAction* origAction= new QAction("原始大小");
-    QAction* winAction= new QAction("适合窗口");
-
-    QToolBar* toolBar = addToolBar(tr("&File"));
-    toolBar->addAction(origAction);
-    toolBar->addAction(winAction);
-
+    QSlider* slider = new QSlider(Qt::Horizontal);
+    ui->toolBar->addWidget(slider);
 }
 
 void frame::createRightMenu()
