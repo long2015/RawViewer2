@@ -115,7 +115,13 @@ void frame::createRightMenu()
 
 void frame::contextMenuEvent(QContextMenuEvent *event)
 {
-    m_popMenu->exec(event->globalPos());
+    int toolHeight = ui->toolBar->height();
+    int x = event->x();
+    int y = event->y();
+
+    if( y > toolHeight && y < ui->label->height() + toolHeight &&
+        x > 0 && x < ui->label->width() )
+        m_popMenu->exec(event->globalPos());
 }
 
 void frame::resizeEvent(QResizeEvent *event)
