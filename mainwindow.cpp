@@ -11,7 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("RawViewer 2");
+    setWindowIcon(QIcon(":/ui/logo.png"));
+    setWindowTitle("RawViewer2");
     resize(1100, 800);
     setAcceptDrops(true);
 }
@@ -27,8 +28,17 @@ void MainWindow::dropEvent(QDropEvent *event)
     qDebug("filename:%s\n", filename.toStdString().c_str());
 
     frame* pFrame = new frame(filename, this);
+
     QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
-//    if( pFrame->size() < QSize(320, 320) )
+    //删除系统菜单
+    QList<QAction*> actionList = subWindow->systemMenu()->actions();
+    for (int i = 0; i < actionList.size(); ++i)
+    {
+        subWindow->systemMenu()->removeAction(actionList[i]);
+    }
+    //设置图标
+    subWindow->setWindowIcon(QIcon(":/ui/logo.png"));
+
     subWindow->resize(pFrame->size());
     subWindow->show();
 }

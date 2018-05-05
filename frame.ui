@@ -57,7 +57,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionplay"/>
-   <addaction name="separator"/>
+   <addaction name="actionstop"/>
    <addaction name="actionprev"/>
    <addaction name="actionnext"/>
    <addaction name="actionfirst"/>
@@ -67,7 +67,7 @@
   <action name="actionplay">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/toolbar/play</normaloff>:/toolbar/play</iconset>
+     <normaloff>:/ui/toolbar/play.png</normaloff>:/ui/toolbar/play.png</iconset>
    </property>
    <property name="text">
     <string>play</string>
@@ -76,7 +76,7 @@
   <action name="actionprev">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/toolbar/prev</normaloff>:/toolbar/prev</iconset>
+     <normaloff>:/ui/toolbar/prev.png</normaloff>:/ui/toolbar/prev.png</iconset>
    </property>
    <property name="text">
     <string>prev</string>
@@ -85,7 +85,7 @@
   <action name="actionnext">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/toolbar/next</normaloff>:/toolbar/next</iconset>
+     <normaloff>:/ui/toolbar/next.png</normaloff>:/ui/toolbar/next.png</iconset>
    </property>
    <property name="text">
     <string>next</string>
@@ -94,7 +94,7 @@
   <action name="actionfirst">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/toolbar/first</normaloff>:/toolbar/first</iconset>
+     <normaloff>:/ui/toolbar/first.png</normaloff>:/ui/toolbar/first.png</iconset>
    </property>
    <property name="text">
     <string>first</string>
@@ -103,10 +103,19 @@
   <action name="actionlast">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/toolbar/last</normaloff>:/toolbar/last</iconset>
+     <normaloff>:/ui/toolbar/last.png</normaloff>:/ui/toolbar/last.png</iconset>
    </property>
    <property name="text">
     <string>last</string>
+   </property>
+  </action>
+  <action name="actionstop">
+   <property name="icon">
+    <iconset resource="toolbar.qrc">
+     <normaloff>:/ui/toolbar/stop.png</normaloff>:/ui/toolbar/stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>stop</string>
    </property>
   </action>
  </widget>

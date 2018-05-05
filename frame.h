@@ -45,9 +45,6 @@ private:
     QLabel*      m_labelHeight;
     QLabel*      m_labelColor;
 
-    QLabel*      m_labelFrame;
-    QLabel*      m_labelFrameTotal;
-
     QMenu*       m_popMenu;
 };
 

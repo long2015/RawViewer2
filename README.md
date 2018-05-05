@@ -1,5 +1,5 @@
-## RawViewer 2
-RawViewer 2是一个简单易用的RGB和YUV格式图片查看工具，同时支持YUV和RGB图像的相互转换，以及导出为png格式。
+## RawViewer2
+RawViewer2是一个简单易用的RGB和YUV格式图片查看工具，同时支持YUV和RGB图像的相互转换，以及导出为png格式。
 GUI基于Qt5开发，颜色空间转换使用ffmpeg库。
 
 ## 功能

@@ -4,6 +4,9 @@
 #include <QStatusBar>
 #include <QToolBar>
 #include <QMenu>
+#include <QtWidgets/QSlider>
+#include <QLayout>
+
 
 extern "C"
 {
@@ -38,7 +41,7 @@ frame::frame(QString filename, QWidget *parent) :
     m_image = QImage(m_imageInfo.width, m_imageInfo.height, QImage::Format_RGB888);
     memcpy(m_image.bits(), m_rawFile.GetFrame(), m_rawFile.GetFrameLen());
 
-    resize(m_imageInfo.width, m_imageInfo.height);
+    resize(420, 420);
 }
 
 frame::~frame()
@@ -61,15 +64,10 @@ void frame::scaledImage(QSize size)
     sprintf(buf, "%d", m_imageInfo.height);
     m_labelHeight->setText(buf);
     m_labelColor->setText(m_imageInfo.colorstr.c_str());
-
-    m_labelFrame->setText("0");
-    m_labelFrameTotal->setText("1");
 }
 
 void frame::createStateBar()
 {
-    statusBar()->setStyleSheet(QString("QStatusBar::item{border: 2px}"));
-
     m_labelWidth = new QLabel();
     m_labelHeight = new QLabel();
     m_labelColor = new QLabel();
@@ -77,41 +75,42 @@ void frame::createStateBar()
     statusBar()->addWidget(m_labelHeight);
     statusBar()->addWidget(m_labelColor);
 
-    m_labelFrame = new QLabel();
-    m_labelFrameTotal = new QLabel();
-    statusBar()->addPermanentWidget(m_labelFrame);
-    statusBar()->addPermanentWidget(m_labelFrameTotal);
+    statusBar()->setStyleSheet(QString("QStatusBar::item{border: 2px}"));
 }
 
 void frame::createToolBar()
 {
     QSlider* slider = new QSlider(Qt::Horizontal);
+    QLabel* frame = new QLabel("0/1");
     ui->toolBar->addWidget(slider);
+    ui->toolBar->addWidget(frame);
+    slider->setMaximumWidth(250);
+    ui->toolBar->addSeparator();
+
+    ui->toolBar->setIconSize(QSize(18, 18));
 }
 
 void frame::createRightMenu()
 {
-    QAction*     m_RGBAction;
-    QAction*     m_BGRAction;
-    QAction*     m_NV21Action;
+    QAction* zoomInAction = new QAction(tr("Zoom In"), this);
+    QAction* zoomOutAction = new QAction(tr("Zoom Out"), this);
+    QAction* zoomMinAction = new QAction(tr("Min Size"), this);
+    QAction* zoomOrigAction = new QAction(tr("Orig Size"), this);
+    QAction* zoomFullAction = new QAction(tr("Full"), this);
 
-    m_RGBAction = new QAction(tr("RGB"), this);  //创建新的菜单项
-    m_RGBAction->setCheckable(true);//设置可选
-    m_RGBAction->setChecked(true);//设置是否选中
-
-    //connect(firstChannel, SIGNAL(triggered()), this, SLOT(firstChannelSlot()));       //该菜单项的连接信号和槽
-    m_BGRAction = new QAction(tr("BGR"), this);  //创建新的菜单项
-
-    m_NV21Action = new QAction(tr("NV21"), this);  //创建新的菜单项
-
+    QAction* infoAction = new QAction(tr("Info"), this);
+    QAction* moreAction = new QAction(tr("More"), this);
     m_popMenu = new QMenu();
-    m_popMenu->addAction(m_RGBAction);
-    m_popMenu->addAction(m_BGRAction);
-    m_popMenu->addAction(m_NV21Action);
+    QMenu* zoomMenu = m_popMenu->addMenu("Zoom");
+    zoomMenu->addAction(zoomInAction);
+    zoomMenu->addAction(zoomOutAction);
+    zoomMenu->addAction(zoomMinAction);
+    zoomMenu->addAction(zoomOrigAction);
+    zoomMenu->addAction(zoomFullAction);
 
+    m_popMenu->addAction(infoAction);
     m_popMenu->addSeparator();
-    m_popMenu->addMenu("&More");
-
+    m_popMenu->addAction(moreAction);
 }
 
 void frame::contextMenuEvent(QContextMenuEvent *event)
