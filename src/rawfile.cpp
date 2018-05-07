@@ -1,7 +1,7 @@
 #include "rawfile.h"
 #include <assert.h>
 #include <string.h>
-#include <color_space.h>
+#include <src/color_space.h>
 extern "C"
 {
     #include <libavutil/pixdesc.h>

@@ -67,7 +67,7 @@
   <action name="actionplay">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/ui/toolbar/play.png</normaloff>:/ui/toolbar/play.png</iconset>
+     <normaloff>:/toolbar/play.png</normaloff>:/toolbar/play.png</iconset>
    </property>
    <property name="text">
     <string>play</string>
@@ -76,7 +76,7 @@
   <action name="actionprev">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/ui/toolbar/prev.png</normaloff>:/ui/toolbar/prev.png</iconset>
+     <normaloff>:/toolbar/prev.png</normaloff>:/toolbar/prev.png</iconset>
    </property>
    <property name="text">
     <string>prev</string>
@@ -85,7 +85,7 @@
   <action name="actionnext">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/ui/toolbar/next.png</normaloff>:/ui/toolbar/next.png</iconset>
+     <normaloff>:/toolbar/next.png</normaloff>:/toolbar/next.png</iconset>
    </property>
    <property name="text">
     <string>next</string>
@@ -94,7 +94,7 @@
   <action name="actionfirst">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/ui/toolbar/first.png</normaloff>:/ui/toolbar/first.png</iconset>
+     <normaloff>:/toolbar/first.png</normaloff>:/toolbar/first.png</iconset>
    </property>
    <property name="text">
     <string>first</string>
@@ -103,7 +103,7 @@
   <action name="actionlast">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/ui/toolbar/last.png</normaloff>:/ui/toolbar/last.png</iconset>
+     <normaloff>:/toolbar/last.png</normaloff>:/toolbar/last.png</iconset>
    </property>
    <property name="text">
     <string>last</string>
@@ -112,7 +112,7 @@
   <action name="actionstop">
    <property name="icon">
     <iconset resource="toolbar.qrc">
-     <normaloff>:/ui/toolbar/stop.png</normaloff>:/ui/toolbar/stop.png</iconset>
+     <normaloff>:/toolbar/stop.png</normaloff>:/toolbar/stop.png</iconset>
    </property>
    <property name="text">
     <string>stop</string>

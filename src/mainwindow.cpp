@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowIcon(QIcon(":/ui/logo.png"));
+    setWindowIcon(QIcon(":/logo.png"));
     setWindowTitle("RawViewer2");
     resize(1100, 800);
     setAcceptDrops(true);

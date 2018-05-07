@@ -30,20 +30,20 @@ DEFINES += QT_DEPRECATED_WARNINGS __STDC_CONSTANT_MACROS
 
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
-    frame.cpp \
-    color_space.cpp \
-    rawfile.cpp
+        src/main.cpp \
+        src/mainwindow.cpp \
+        src/frame.cpp \
+        src/color_space.cpp \
+        src/rawfile.cpp
 
 HEADERS += \
-        mainwindow.h \
-    frame.h \
-    rawfile.h
+        src/mainwindow.h \
+        src/frame.h \
+        src/rawfile.h
 
 FORMS += \
-        mainwindow.ui   \
-        frame.ui
+        ui/mainwindow.ui   \
+        ui/frame.ui
 
 RESOURCES += \
-    toolbar.qrc
+        ui/toolbar.qrc
