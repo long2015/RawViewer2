@@ -3,23 +3,28 @@
 
 #include <QMainWindow>
 #include <QResizeEvent>
-#include "rawfile.h"
 #include <QKeyEvent>
 #include <QContextMenuEvent>
 #include <QLabel>
 #include <QAction>
+#include <QtWidgets/QSlider>
+#include "image.h"
+
 
 namespace Ui {
 class frame;
 }
 
-class frame : public QMainWindow
+class CImageWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit frame(QString filename, QWidget *parent = 0);
-    ~frame();
+    explicit CImageWindow(QString filename, QWidget *parent = 0);
+    ~CImageWindow();
+
+public slots:
+    void sliderChanged(int value);
 
 protected:
     void resizeEvent(QResizeEvent *event);
@@ -35,15 +40,22 @@ private:
 private:
     Ui::frame *ui;
 
-    CRawFile    m_rawFile;
-    ImageInfo   m_imageInfo;
+    IImage*     m_image;
+    FrameInfo   m_frameInfo;
+    int         m_frameCnt;
+    int         m_frameId;
+    CFrame      m_frame;
 
     QPixmap      m_pixmap;
-    QImage       m_image;
+    QImage       m_QImage;
 
     QLabel*      m_labelWidth;
     QLabel*      m_labelHeight;
     QLabel*      m_labelColor;
+
+    QSlider*     m_slider;
+    QLabel*      m_labelFrameCnt;
+    QLabel*      m_labelFrameId;
 
     QMenu*       m_popMenu;
 };

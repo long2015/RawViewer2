@@ -6,6 +6,10 @@ set(CMAKE_AUTOMOC ON)
 set(INCLUDE_DIR ${INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 set(INCLUDE_DIR ${INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
 
+# ffmpeg
+set(INCLUDE_DIR ${INCLUDE_DIR} 3rdparty/ffmpeg/include)
+link_directories(3rdparty/ffmpeg/lib)
+
 # set Qt path
 if(WIN32)
     set(CMAKE_PREFIX_PATH "C:/QT/Qt5.8.0_win64/5.8/msvc2013_64/lib/cmake/Qt5Widgets")
@@ -34,6 +38,5 @@ target_link_libraries(RawViewer2 swscale avformat avcodec avutil)
 qt5_use_modules(RawViewer2 Widgets)
 
 if(WIN32)
-    set(CMAKE_PREFIX_PATH "C:/QT/Qt5.8.0_win64/5.8/msvc2013_64/lib/cmake/Qt5Widgets")
     set_target_properties(RawViewer2 PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 endif()

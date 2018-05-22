@@ -1,4 +1,4 @@
-#include "frame.h"
+#include "ImageWindow.h"
 #include "ui_frame.h"
 #include <assert.h>
 #include <QStatusBar>
@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QtWidgets/QSlider>
 #include <QLayout>
+#include "RawImage.h"
 
 
 extern "C"
@@ -13,7 +14,7 @@ extern "C"
 #include "libavutil/pixfmt.h"
 }
 
-frame::frame(QString filename, QWidget *parent) :
+CImageWindow::CImageWindow(QString filename, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frame)
 {
@@ -27,70 +28,108 @@ frame::frame(QString filename, QWidget *parent) :
     createToolBar();
     createRightMenu();
 
-    int height = ui->toolBar->height() + statusBar()->height();
-    setMinimumSize(320, 320+height);
+    m_image = IImage::createImage(filename.toStdString());
+    if( m_image == NULL )
+    {
+        //dialog to get width, height, color
+        int width = 0;
+        int height = 0;
+        int color = 0;
+        m_image = IImage::createImage(filename.toStdString(), width, height, color);
+    }
 
     // load file
-    if( !m_rawFile.Open(filename.toStdString()) )
+    if( !m_image->open() )
     {
         qDebug("open failed. filename:%s\n",filename.toStdString().c_str());
         return;
     }
-    m_rawFile.GetImageInfo(m_imageInfo);
+    m_image->getFrameInfo(m_frameInfo);
+    m_frameCnt = m_image->getFrameCount();
+    m_frameId = 0;
 
-    m_image = QImage(m_imageInfo.width, m_imageInfo.height, QImage::Format_RGB888);
-    memcpy(m_image.bits(), m_rawFile.GetFrame(), m_rawFile.GetFrameLen());
+    m_image->getFrame(m_frameId, m_frame);
+    m_QImage = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+
+    m_slider->setRange(0, m_frameCnt-1);
+    m_slider->setValue(m_frameId);
 
     resize(420, 420);
 }
 
-frame::~frame()
+CImageWindow::~CImageWindow()
 {
+    if( m_image )
+    {
+        m_image->close();
+        delete m_image;
+        m_image = NULL;
+    }
     delete ui;
 }
 
-void frame::scaledImage(QSize size)
+void CImageWindow::scaledImage(QSize size)
 {
     int height = ui->toolBar->height() + statusBar()->height();
     size.setHeight(size.height()- height);
 
-    QImage image = m_image.scaled(size);
+    QImage image = m_QImage.scaled(size);
     ui->label->resize(size);
 
     ui->label->setPixmap(QPixmap::fromImage(image));
     char buf[128];
-    sprintf(buf, "%d", m_imageInfo.width);
+    sprintf(buf, "%d", m_frameInfo.width);
     m_labelWidth->setText(buf);
-    sprintf(buf, "%d", m_imageInfo.height);
+    sprintf(buf, "%d", m_frameInfo.height);
     m_labelHeight->setText(buf);
-    m_labelColor->setText(m_imageInfo.colorstr.c_str());
+    m_labelColor->setText(toColorStr(m_frameInfo.color).c_str());
+
+    sprintf(buf, "%d", m_frameId);
+    m_labelFrameId->setText(buf);
+    sprintf(buf, "%d", m_frameCnt);
+    m_labelFrameCnt->setText(buf);
 }
 
-void frame::createStateBar()
+void CImageWindow::createStateBar()
 {
     m_labelWidth = new QLabel();
     m_labelHeight = new QLabel();
     m_labelColor = new QLabel();
+
+    m_labelFrameId = new QLabel();
+    m_labelFrameCnt = new QLabel();
+
     statusBar()->addWidget(m_labelWidth);
     statusBar()->addWidget(m_labelHeight);
     statusBar()->addWidget(m_labelColor);
 
+    statusBar()->addPermanentWidget(m_labelFrameId, 0);
+    statusBar()->addPermanentWidget(m_labelFrameCnt, 0);
+
     statusBar()->setStyleSheet(QString("QStatusBar::item{border: 2px}"));
 }
 
-void frame::createToolBar()
+void CImageWindow::sliderChanged(int value)
 {
-    QSlider* slider = new QSlider(Qt::Horizontal);
-    QLabel* frame = new QLabel("0/1");
-    ui->toolBar->addWidget(slider);
-    ui->toolBar->addWidget(frame);
-    slider->setMaximumWidth(250);
-    ui->toolBar->addSeparator();
+    printf("slider:%d %d\n", m_slider->value(), value);
+    m_frameId = value;
+
+    m_image->getFrame(m_frameId, m_frame);
+    m_QImage = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+    scaledImage(size());
+}
+void CImageWindow::createToolBar()
+{
+    m_slider = new QSlider(Qt::Horizontal);
+    connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(sliderChanged(int)));
+
+    ui->toolBar->addWidget(m_slider);
 
     ui->toolBar->setIconSize(QSize(18, 18));
+    ui->toolBar->setMovable(false);
 }
 
-void frame::createRightMenu()
+void CImageWindow::createRightMenu()
 {
     QAction* zoomInAction = new QAction(tr("Zoom In"), this);
     QAction* zoomOutAction = new QAction(tr("Zoom Out"), this);
@@ -113,7 +152,7 @@ void frame::createRightMenu()
     m_popMenu->addAction(moreAction);
 }
 
-void frame::contextMenuEvent(QContextMenuEvent *event)
+void CImageWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     int toolHeight = ui->toolBar->height();
     int x = event->x();
@@ -124,22 +163,16 @@ void frame::contextMenuEvent(QContextMenuEvent *event)
         m_popMenu->exec(event->globalPos());
 }
 
-void frame::resizeEvent(QResizeEvent *event)
+void CImageWindow::resizeEvent(QResizeEvent *event)
 {
     QSize size = event->size();
     scaledImage(size);
 }
 
-void frame::keyPressEvent(QKeyEvent *event)
+void CImageWindow::keyPressEvent(QKeyEvent *event)
 {
     if( event->key() == Qt::Key_Space )
     {
-        //int color = AV_PIX_FMT_RGB24£»
-        m_rawFile.Reload(0);
 
-        m_image = QImage(m_imageInfo.width, m_imageInfo.height, QImage::Format_RGB888);
-        memcpy(m_image.bits(), m_rawFile.GetFrame(), m_rawFile.GetFrameLen());
-
-        scaledImage(this->size());
     }
 }

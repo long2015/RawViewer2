@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "frame.h"
+#include "ImageWindow.h"
 #include <QMimeData>
 #include <QDebug>
 #include <QtWidgets/QMdiSubWindow>
@@ -27,7 +27,7 @@ void MainWindow::dropEvent(QDropEvent *event)
     QString filename = event->mimeData()->urls()[0].toLocalFile();
     qDebug("filename:%s\n", filename.toStdString().c_str());
 
-    frame* pFrame = new frame(filename, this);
+    CImageWindow* pFrame = new CImageWindow(filename, this);
 
     QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
     //删除系统菜单
@@ -37,7 +37,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         subWindow->systemMenu()->removeAction(actionList[i]);
     }
     //设置图标
-    subWindow->setWindowIcon(QIcon(":/ui/logo.png"));
+    subWindow->setWindowIcon(QIcon(":/logo.png"));
 
     subWindow->resize(pFrame->size());
     subWindow->show();
