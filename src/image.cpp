@@ -2,6 +2,10 @@
 
 #include "image.h"
 #include "RawImage.h"
+#include <QRegExp>
+#include <QStringList>
+#include <QDebug>
+
 
 extern "C"
 {
@@ -40,26 +44,21 @@ static unsigned char float_to_char(float value, float min, float max)
 }
 static bool parserFileName(std::string filename, FrameInfo &info)
 {
-    int width;
-    int height;
-    char color_str[16];
+    QRegExp exp(".*_([0-9]+)x([0-9]+).([a-zA-Z0-9_]+)");
+    bool match = exp.exactMatch(filename.c_str());
 
-    int index = filename.size();
-    while( index >= 0 )
+    if( !match )
     {
-        if( filename[index] == '_' || filename[index] == '/' )
-            break;
-        index--;
-    }
-    index++;
-
-    int ret = sscanf(filename.c_str()+index, "%dx%d.%s", &width, &height, color_str);
-    printf("ret:%d width:%d height:%d color:%s\n", ret, width, height, color_str);
-    if( ret != 3 )
-    {
-        printf("parser error.\n");
+        qDebug() << "parser filename failed." << exp.capturedTexts();
         return false;
     }
+
+    int width = exp.cap(1).toInt();
+    int height = exp.cap(2).toInt();
+    std::string color_str = exp.cap(3).toStdString();
+
+    printf("width:%d height:%d color:%s\n", width, height, color_str.c_str());
+
     int color_space = toColor(color_str);
     if( color_space == AV_PIX_FMT_NONE )
     {
@@ -95,15 +94,15 @@ int toColor(std::string color_str)
         {
             color_space = AVPixelFormat(AV_PIX_FMT_RGB24P);
         }
-        else if( std::string("rgbf") == color_str )
-        {
-            color_space = AVPixelFormat(AV_PIX_FMT_RGB24_FLOAT);
-        }
-        else if( std::string("rgbpf") == color_str )
+        else if( std::string("rgb24p_float") == color_str )
         {
             color_space = AVPixelFormat(AV_PIX_FMT_RGB24P_FLOAT);
         }
-        else if( std::string("bgrf") == color_str )
+        else if( std::string("rgb24_float") == color_str )
+        {
+            color_space = AVPixelFormat(AV_PIX_FMT_RGB24_FLOAT);
+        }
+        else if( std::string("bgr24_float") == color_str )
         {
             color_space = AVPixelFormat(AV_PIX_FMT_BGR24_FLOAT);
         }

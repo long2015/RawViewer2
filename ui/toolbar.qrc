@@ -1,12 +1,5 @@
 <RCC>
     <qresource>
-        <file>toolbar/pause.png</file>
-        <file>toolbar/play.png</file>
-        <file>toolbar/stop.png</file>
-        <file>toolbar/prev.png</file>
-        <file>toolbar/next.png</file>
-        <file>toolbar/first.png</file>
-        <file>toolbar/last.png</file>
         <file>logo.png</file>
     </qresource>
 </RCC>

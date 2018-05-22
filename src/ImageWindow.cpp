@@ -6,6 +6,8 @@
 #include <QMenu>
 #include <QtWidgets/QSlider>
 #include <QLayout>
+#include <QtWidgets/QStyle>
+#include <QIcon>
 #include "RawImage.h"
 
 
@@ -120,6 +122,30 @@ void CImageWindow::sliderChanged(int value)
 }
 void CImageWindow::createToolBar()
 {
+    QAction* playInAction = new QAction(tr("play"), this);
+    playInAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    ui->toolBar->addAction(playInAction);
+
+    QAction* stopInAction = new QAction(tr("stop"), this);
+    stopInAction->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+    ui->toolBar->addAction(stopInAction);
+
+    QAction* backwordInAction = new QAction(tr("backward"), this);
+    backwordInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSkipBackward));
+    ui->toolBar->addAction(backwordInAction);
+
+    QAction* forwardInAction = new QAction(tr("forward"), this);
+    forwardInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSkipForward));
+    ui->toolBar->addAction(forwardInAction);
+
+    QAction* seekBackwordInAction = new QAction(tr("play"), this);
+    seekBackwordInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSeekBackward));
+    ui->toolBar->addAction(seekBackwordInAction);
+
+    QAction* seekforwardInAction = new QAction(tr("play"), this);
+    seekforwardInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSeekForward));
+    ui->toolBar->addAction(seekforwardInAction);
+
     m_slider = new QSlider(Qt::Horizontal);
     connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(sliderChanged(int)));
 
