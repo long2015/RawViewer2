@@ -7,7 +7,12 @@
 #include <QtWidgets/QSlider>
 #include <QLayout>
 #include <QtWidgets/QStyle>
+#include <QPainter>
 #include <QIcon>
+#include <QLineEdit>
+#include <QtGui/QIntValidator>
+#include <QApplication>
+#include <QClipboard>
 #include "RawImage.h"
 
 
@@ -48,15 +53,18 @@ CImageWindow::CImageWindow(QString filename, QWidget *parent) :
     }
     m_image->getFrameInfo(m_frameInfo);
     m_frameCnt = m_image->getFrameCount();
-    m_frameId = 0;
 
+    m_frameId = 0;
     m_image->getFrame(m_frameId, m_frame);
-    m_QImage = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+    QImage image = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+    m_origPixmap = QPixmap::fromImage(image);
 
     m_slider->setRange(0, m_frameCnt-1);
     m_slider->setValue(m_frameId);
 
-    resize(420, 420);
+    int width = m_frameInfo.width;
+    int height = TOOLBAR_HEIGHT + STATEBAR_HEIGHT + m_frameInfo.height;
+    resize(width, height);
 }
 
 CImageWindow::~CImageWindow()
@@ -72,13 +80,12 @@ CImageWindow::~CImageWindow()
 
 void CImageWindow::scaledImage(QSize size)
 {
-    int height = ui->toolBar->height() + statusBar()->height();
-    size.setHeight(size.height()- height);
+    size.setHeight(size.height() - TOOLBAR_HEIGHT - STATEBAR_HEIGHT );
+//    qDebug("toolbar height:%d, height:%d\n", ui->toolBar->height(), statusBar()->height());
 
-    QImage image = m_QImage.scaled(size);
-    ui->label->resize(size);
+    m_scaledPixmap = m_origPixmap.scaled(size);
+    m_endPoint = m_startPoint;
 
-    ui->label->setPixmap(QPixmap::fromImage(image));
     char buf[128];
     sprintf(buf, "%d", m_frameInfo.width);
     m_labelWidth->setText(buf);
@@ -113,38 +120,21 @@ void CImageWindow::createStateBar()
 
 void CImageWindow::sliderChanged(int value)
 {
-    printf("slider:%d %d\n", m_slider->value(), value);
     m_frameId = value;
 
     m_image->getFrame(m_frameId, m_frame);
-    m_QImage = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+    QImage image = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+    m_origPixmap = QPixmap::fromImage(image);
     scaledImage(size());
+
+    update();
 }
+
 void CImageWindow::createToolBar()
 {
     QAction* playInAction = new QAction(tr("play"), this);
     playInAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     ui->toolBar->addAction(playInAction);
-
-    QAction* stopInAction = new QAction(tr("stop"), this);
-    stopInAction->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
-    ui->toolBar->addAction(stopInAction);
-
-    QAction* backwordInAction = new QAction(tr("backward"), this);
-    backwordInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSkipBackward));
-    ui->toolBar->addAction(backwordInAction);
-
-    QAction* forwardInAction = new QAction(tr("forward"), this);
-    forwardInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSkipForward));
-    ui->toolBar->addAction(forwardInAction);
-
-    QAction* seekBackwordInAction = new QAction(tr("play"), this);
-    seekBackwordInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSeekBackward));
-    ui->toolBar->addAction(seekBackwordInAction);
-
-    QAction* seekforwardInAction = new QAction(tr("play"), this);
-    seekforwardInAction->setIcon(style()->standardIcon(QStyle::SP_MediaSeekForward));
-    ui->toolBar->addAction(seekforwardInAction);
 
     m_slider = new QSlider(Qt::Horizontal);
     connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(sliderChanged(int)));
@@ -157,25 +147,37 @@ void CImageWindow::createToolBar()
 
 void CImageWindow::createRightMenu()
 {
-    QAction* zoomInAction = new QAction(tr("Zoom In"), this);
-    QAction* zoomOutAction = new QAction(tr("Zoom Out"), this);
-    QAction* zoomMinAction = new QAction(tr("Min Size"), this);
-    QAction* zoomOrigAction = new QAction(tr("Orig Size"), this);
-    QAction* zoomFullAction = new QAction(tr("Full"), this);
-
-    QAction* infoAction = new QAction(tr("Info"), this);
-    QAction* moreAction = new QAction(tr("More"), this);
+    QAction* picInfoAction = new QAction(tr("Pic Info"), this);
     m_popMenu = new QMenu();
-    QMenu* zoomMenu = m_popMenu->addMenu("Zoom");
-    zoomMenu->addAction(zoomInAction);
-    zoomMenu->addAction(zoomOutAction);
-    zoomMenu->addAction(zoomMinAction);
-    zoomMenu->addAction(zoomOrigAction);
-    zoomMenu->addAction(zoomFullAction);
+    m_popMenu->addAction(picInfoAction);
 
-    m_popMenu->addAction(infoAction);
-    m_popMenu->addSeparator();
-    m_popMenu->addAction(moreAction);
+    QAction* copyAreaInfoAction = new QAction(tr("Copy Area Info"), this);
+    QAction* exportPictureAction = new QAction(tr("Export to Picture"), this);
+    QAction* exportVideoAction = new QAction(tr("Export to Video"), this);
+
+    m_cutAreaMenu = new QMenu();
+    m_cutAreaMenu->addAction(copyAreaInfoAction);
+    m_cutAreaMenu->addAction(exportPictureAction);
+    m_cutAreaMenu->addAction(exportVideoAction);
+
+    connect(copyAreaInfoAction, SIGNAL(triggered()), this, SLOT(copyArea()));
+}
+void CImageWindow::copyArea()
+{
+    qDebug("[%s]\n", __FUNCTION__);
+    char area[32] = {0};
+    QPoint leftTop = m_startPoint - QPoint(0, TOOLBAR_HEIGHT);
+    QPoint rightBottom = m_endPoint - QPoint(0, TOOLBAR_HEIGHT);
+    //
+    float scaledX = (float)m_origPixmap.width()/m_scaledPixmap.width();
+    float scaledY = (float)m_origPixmap.height()/m_scaledPixmap.height();
+    leftTop.setX( leftTop.x()*scaledX );
+    leftTop.setY( leftTop.y()*scaledY );
+    rightBottom.setX( rightBottom.x()*scaledX );
+    rightBottom.setY( rightBottom.y()*scaledY );
+
+    sprintf(area, "(%d,%d)(%d,%d)", leftTop.x(), leftTop.y(), rightBottom.x(), rightBottom.y());
+    QApplication::clipboard()->setText(area);
 }
 
 void CImageWindow::contextMenuEvent(QContextMenuEvent *event)
@@ -184,15 +186,21 @@ void CImageWindow::contextMenuEvent(QContextMenuEvent *event)
     int x = event->x();
     int y = event->y();
 
-    if( y > toolHeight && y < ui->label->height() + toolHeight &&
-        x > 0 && x < ui->label->width() )
-        m_popMenu->exec(event->globalPos());
+    if( y > toolHeight && y < height() - toolHeight &&
+        x > 0 && x < width() )
+        if( m_startPoint == m_endPoint )
+        {
+            m_popMenu->exec(event->globalPos());
+        }
+        else
+        {
+            m_cutAreaMenu->exec(event->globalPos());
+        }
 }
 
 void CImageWindow::resizeEvent(QResizeEvent *event)
 {
-    QSize size = event->size();
-    scaledImage(size);
+    scaledImage(event->size());
 }
 
 void CImageWindow::keyPressEvent(QKeyEvent *event)
@@ -201,4 +209,42 @@ void CImageWindow::keyPressEvent(QKeyEvent *event)
     {
 
     }
+}
+
+void CImageWindow::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    painter.setPen(QPen(Qt::green, 1, Qt::SolidLine));
+
+    painter.drawPixmap(0,TOOLBAR_HEIGHT, m_scaledPixmap);  //»­Ä£ºý±³¾°
+    if( m_startPoint != m_endPoint )
+    {
+        painter.drawRect(QRect(m_startPoint, m_endPoint));
+    }
+}
+
+void CImageWindow::mousePressEvent(QMouseEvent *event)
+{
+    if( event->buttons() & Qt::LeftButton )
+    {
+        m_startPoint = event->pos();
+        m_endPoint = m_startPoint;
+        update();
+    }
+}
+
+void CImageWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if( event->buttons() == Qt::LeftButton )
+    {
+        m_endPoint = event->pos();
+//        qDebug("<%d,%d> width:%d height:%d\n", event->x(), event->y(), m_endPoint.x()-m_startPoint.x(), m_endPoint.y()-m_startPoint.y());
+
+        update();
+    }
+}
+
+void CImageWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+
 }

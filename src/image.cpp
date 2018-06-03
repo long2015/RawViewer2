@@ -108,7 +108,7 @@ int toColor(std::string color_str)
         }
         else
         {
-            printf("Not support color space:%s\n", color_str);
+            printf("Not support color space:%s\n", color_str.c_str());
             return AV_PIX_FMT_NONE;
         }
     }

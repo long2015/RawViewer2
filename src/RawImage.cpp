@@ -46,9 +46,8 @@ int CRawImage::getFrameCount()
 
 int CRawImage::getFrame(int nframe, CFrame& frame)
 {
-    int len = m_frame.info.frameLen;
-    fseek(m_fp, len*nframe, SEEK_SET);
-
+    int64_t len = m_frame.info.frameLen;
+    fseeko64(m_fp, len*nframe, SEEK_SET);
     fread(m_frame.data[0], len, 1, m_fp);
 
     frame = m_frame;

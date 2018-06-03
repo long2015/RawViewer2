@@ -24,7 +24,8 @@ protected:
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void resizeEvent(QResizeEvent *event);
-
+    void closeEvent(QCloseEvent* event);
+    
 private:
     Ui::MainWindow *ui;
 };

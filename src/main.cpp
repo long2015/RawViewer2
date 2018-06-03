@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QTranslator>
 
 #if defined(WIN32) && defined(NDEBUG)
 #define main WinMain
@@ -9,6 +10,11 @@ int main(int argc, char *argv[])
 {
 #if 1
     QApplication a(argc, argv);
+
+    QTranslator translator;
+    translator.load("lang/lang_zh.qm");
+    qApp->installTranslator(&translator);
+
     MainWindow w;
     w.show();
 
