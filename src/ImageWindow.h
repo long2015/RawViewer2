@@ -22,14 +22,23 @@ class CImageWindow : public QMainWindow
 public:
     explicit CImageWindow(QString filename, QWidget *parent = 0);
     ~CImageWindow();
-
+    enum
+    {
+        TOOLBAR_HEIGHT = 33,
+        STATEBAR_HEIGHT = 23,
+    };
 public slots:
     void sliderChanged(int value);
+    void copyArea();
 
 protected:
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void mousePressEvent(QMouseEvent *);
+    void mouseMoveEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
     void contextMenuEvent(QContextMenuEvent *event);
+    void paintEvent(QPaintEvent* event);
 
 private:
     void scaledImage(QSize size);
@@ -46,8 +55,8 @@ private:
     int         m_frameId;
     CFrame      m_frame;
 
-    QPixmap      m_pixmap;
-    QImage       m_QImage;
+    QPixmap     m_origPixmap;
+    QPixmap     m_scaledPixmap;
 
     QLabel*      m_labelWidth;
     QLabel*      m_labelHeight;
@@ -58,6 +67,10 @@ private:
     QLabel*      m_labelFrameId;
 
     QMenu*       m_popMenu;
+    QMenu*       m_cutAreaMenu;
+
+    QPoint       m_startPoint;
+    QPoint       m_endPoint;
 };
 
 #endif // FRAME_H

@@ -17,6 +17,8 @@ LIBS += \
     -lavcodec   \
     -lavutil
 
+TRANSLATIONS = lang/lang_zh.ts lang/lang_en.ts
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -32,14 +34,15 @@ DEFINES += QT_DEPRECATED_WARNINGS __STDC_CONSTANT_MACROS
 SOURCES += \
         src/main.cpp \
         src/mainwindow.cpp \
-        src/frame.cpp \
-        src/color_space.cpp \
-        src/rawfile.cpp
+        src/ImageWindow.cpp \
+        src/image.cpp \
+        src/RawImage.cpp
 
 HEADERS += \
         src/mainwindow.h \
-        src/frame.h \
-        src/rawfile.h
+        src/ImageWindow.h \
+        src/image.h \
+        src/RawImage.h
 
 FORMS += \
         ui/mainwindow.ui   \

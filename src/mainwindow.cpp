@@ -4,6 +4,7 @@
 #include <QMimeData>
 #include <QDebug>
 #include <QtWidgets/QMdiSubWindow>
+#include <QMessageBox>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -15,6 +16,26 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle("RawViewer2");
     resize(1100, 800);
     setAcceptDrops(true);
+
+#if 1
+    QString filename = "/home/long2015/Code/Qt/RawViewer2/data/animal_256x256.bgr24";
+    CImageWindow* pFrame = new CImageWindow(filename, this);
+
+    QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
+    //删除系统菜单
+    QList<QAction*> actionList = subWindow->systemMenu()->actions();
+    for (int i = 0; i < actionList.size(); ++i)
+    {
+        subWindow->systemMenu()->removeAction(actionList[i]);
+    }
+    //设置图标
+    subWindow->setWindowIcon(QIcon(":/logo.png"));
+
+    int width = pFrame->size().width() + 8;
+    int height = pFrame->size().height() + 28;
+    subWindow->resize(width, height);
+    subWindow->show();
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -39,7 +60,9 @@ void MainWindow::dropEvent(QDropEvent *event)
     //设置图标
     subWindow->setWindowIcon(QIcon(":/logo.png"));
 
-    subWindow->resize(pFrame->size());
+    int width = pFrame->size().width() + 8;
+    int height = pFrame->size().height() + 28;
+    subWindow->resize(width, height);
     subWindow->show();
 }
 
@@ -52,4 +75,15 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     ui->mdiArea->resize(event->size());
+}
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if( QMessageBox::question(this, tr(""), tr("Quit ?"), QMessageBox::Yes, QMessageBox::Cancel) == QMessageBox::Yes )
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
 }
