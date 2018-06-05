@@ -27,8 +27,15 @@ public:
         TOOLBAR_HEIGHT = 33,
         STATEBAR_HEIGHT = 23,
     };
+    enum
+    {
+        VIEW_MODE,
+        CROP_MODE
+    };
 public slots:
     void sliderChanged(int value);
+    void enterCrop();
+    void exitCrop();
     void copyArea();
 
 protected:
@@ -49,15 +56,6 @@ private:
 private:
     Ui::frame *ui;
 
-    IImage*     m_image;
-    FrameInfo   m_frameInfo;
-    int         m_frameCnt;
-    int         m_frameId;
-    CFrame      m_frame;
-
-    QPixmap     m_origPixmap;
-    QPixmap     m_scaledPixmap;
-
     QLabel*      m_labelWidth;
     QLabel*      m_labelHeight;
     QLabel*      m_labelColor;
@@ -69,8 +67,20 @@ private:
     QMenu*       m_popMenu;
     QMenu*       m_cutAreaMenu;
 
-    QPoint       m_startPoint;
-    QPoint       m_endPoint;
+    IImage*     m_image;
+    FrameInfo   m_frameInfo;
+    int         m_frameCnt;
+    int         m_frameId;
+    CFrame      m_frame;
+
+    QPixmap     m_origPixmap;
+    QPixmap     m_scaledPixmap;
+
+    QPoint      m_startPoint;
+    QPoint      m_endPoint;
+
+    //
+    int         m_mode;
 };
 
 #endif // FRAME_H

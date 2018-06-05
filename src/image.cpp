@@ -2,6 +2,7 @@
 
 #include "image.h"
 #include "RawImage.h"
+#include "EncodingImage.h"
 #include <QRegExp>
 #include <QStringList>
 #include <QDebug>
@@ -71,6 +72,23 @@ static bool parserFileName(std::string filename, FrameInfo &info)
     info.color = color_space;
     info.dataType = 1;
 
+    return true;
+}
+static bool ffmpegTryOpen(std::string filename, FrameInfo &info)
+{
+    av_register_all();
+    AVFormatContext* pFormatCtx = avformat_alloc_context();
+    AVOutputFormat* format = av_guess_format(NULL, filename.c_str(), NULL);
+    if( format == NULL )
+    {
+        printf("av_find_input_format failed.\n");
+        return false;
+    }
+    printf("mime:%s codec:%p extensions:%s\n", format->mime_type, format->codec_tag, format->extensions);
+    if (avio_open(&pFormatCtx->pb, filename.c_str(), AVIO_FLAG_READ_WRITE) < 0)
+    {
+        printf("Couldn't open output file.\n");
+    }
     return true;
 }
 
@@ -337,14 +355,19 @@ void* CFrame::getRGBData(bool shift)
 IImage *IImage::createImage(std::string filename)
 {
     FrameInfo info;
-    if( !parserFileName(filename, info) )
+    if( parserFileName(filename, info) )
+    {
+        return IImage::createImage(filename, info.width, info.height, info.color);
+    }
+    else if( ffmpegTryOpen(filename, info) )
+    {
+        return new CEncodingImage(filename);
+    }
+    else
     {
         printf("[%s] parser filename:%s error.\n", __FUNCTION__, filename.c_str());
-
         return NULL;
     }
-
-    return IImage::createImage(filename, info.width, info.height, info.color);
 }
 
 IImage *IImage::createImage(std::string filename, int width, int height, int color)

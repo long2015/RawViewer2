@@ -66,6 +66,8 @@ public:
     virtual bool getFrameInfo(FrameInfo& info) = 0;
     virtual int getFrameCount() = 0;
     virtual int getFrame(int nframe, CFrame& frame) = 0;
+//    virtual int exportPicture(std::string filename, int x, int y, int width, int height) = 0;
+//    virtual int exportVideo(std::string filename, int start, int end, int x, int y, int width, int height) = 0;
 };
 
 #endif //RAWVIEWER2_IIMAGE_H

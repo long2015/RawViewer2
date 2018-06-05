@@ -12,7 +12,6 @@ public:
     virtual bool getFrameInfo(FrameInfo& info);
     virtual int getFrameCount();
     virtual int getFrame(int nframe, CFrame& frame);
-
 private:
     std::string m_filename;
     FILE*       m_fp;

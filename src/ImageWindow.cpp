@@ -22,7 +22,7 @@ extern "C"
 }
 
 CImageWindow::CImageWindow(QString filename, QWidget *parent) :
-    QMainWindow(parent),
+    QMainWindow(parent), m_mode(VIEW_MODE),
     ui(new Ui::frame)
 {
     //UI
@@ -148,19 +148,39 @@ void CImageWindow::createToolBar()
 void CImageWindow::createRightMenu()
 {
     QAction* picInfoAction = new QAction(tr("Pic Info"), this);
+    QAction* cropAction = new QAction(tr("Crop"), this);
     m_popMenu = new QMenu();
     m_popMenu->addAction(picInfoAction);
+    m_popMenu->addAction(cropAction);
+    connect(picInfoAction, SIGNAL(triggered()), this, SLOT(showPicInfo()));
+    connect(cropAction, SIGNAL(triggered()), this, SLOT(enterCrop()));
 
     QAction* copyAreaInfoAction = new QAction(tr("Copy Area Info"), this);
     QAction* exportPictureAction = new QAction(tr("Export to Picture"), this);
     QAction* exportVideoAction = new QAction(tr("Export to Video"), this);
+    QAction* exitCropAction = new QAction(tr("Exit Crop"), this);
 
     m_cutAreaMenu = new QMenu();
     m_cutAreaMenu->addAction(copyAreaInfoAction);
     m_cutAreaMenu->addAction(exportPictureAction);
     m_cutAreaMenu->addAction(exportVideoAction);
+    m_cutAreaMenu->addAction(exitCropAction);
 
     connect(copyAreaInfoAction, SIGNAL(triggered()), this, SLOT(copyArea()));
+    connect(exitCropAction, SIGNAL(triggered()), this, SLOT(exitCrop()));
+}
+void CImageWindow::enterCrop()
+{
+    m_mode = CROP_MODE;
+    update();
+}
+void CImageWindow::exitCrop()
+{
+    m_mode = VIEW_MODE;
+
+    m_startPoint = {-1, -1};
+    m_endPoint = m_startPoint;
+    update();
 }
 void CImageWindow::copyArea()
 {
@@ -188,7 +208,7 @@ void CImageWindow::contextMenuEvent(QContextMenuEvent *event)
 
     if( y > toolHeight && y < height() - toolHeight &&
         x > 0 && x < width() )
-        if( m_startPoint == m_endPoint )
+        if( m_mode == VIEW_MODE )
         {
             m_popMenu->exec(event->globalPos());
         }
@@ -225,6 +245,9 @@ void CImageWindow::paintEvent(QPaintEvent *event)
 
 void CImageWindow::mousePressEvent(QMouseEvent *event)
 {
+    if( m_mode != CROP_MODE )
+        return;
+
     if( event->buttons() & Qt::LeftButton )
     {
         m_startPoint = event->pos();
@@ -235,6 +258,9 @@ void CImageWindow::mousePressEvent(QMouseEvent *event)
 
 void CImageWindow::mouseMoveEvent(QMouseEvent *event)
 {
+    if( m_mode != CROP_MODE )
+        return;
+
     if( event->buttons() == Qt::LeftButton )
     {
         m_endPoint = event->pos();
@@ -246,5 +272,6 @@ void CImageWindow::mouseMoveEvent(QMouseEvent *event)
 
 void CImageWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-
+    if( m_mode != CROP_MODE )
+        return;
 }

@@ -18,6 +18,7 @@ endif()
 # Qt5
 find_package(Qt5Widgets REQUIRED)
 set(INCLUDE_DIR ${INCLUDE_DIR} ${Qt5Widgets_INCLUDES})
+set(INCLUDE_DIR ${CMAKE_BINARY_DIR})
 set(MACROS_DEFINE ${Qt5Widgets_DEFINITIONS} -D__STDC_CONSTANT_MACROS)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 #
@@ -32,7 +33,7 @@ add_definitions(${MACROS_DEFINE})
 
 include_directories(${INCLUDE_DIR})
 
-add_executable(RawViewer2 ${SRC_FILES} ${UI_FILES} ui/myRC.rc ${RESOURCE_ADDED})
+add_executable(RawViewer2 ${SRC_FILES} ${UI_FILES} ui/myRC.rc ${RESOURCE_ADDED} src/EncodingImage.cpp src/EncodingImage.h)
 target_link_libraries(RawViewer2 swscale avformat avcodec avutil)
 
 qt5_use_modules(RawViewer2 Widgets)
