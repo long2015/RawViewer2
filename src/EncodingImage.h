@@ -16,6 +16,7 @@
 #ifndef RAWVIEWER2_ENCODINGIMAGE_H
 #define RAWVIEWER2_ENCODINGIMAGE_H
 
+#include <opencv2/videoio.hpp>
 #include "image.h"
 
 class CEncodingImage : public IImage
@@ -28,6 +29,14 @@ public:
     virtual bool getFrameInfo(FrameInfo& info);
     virtual int getFrameCount();
     virtual int getFrame(int nframe, CFrame& frame);
+
+private:
+    std::string m_filename;
+    cv::VideoCapture m_capture;
+    cv::Mat          m_mat;
+
+    CFrame      m_frame;
+    int         m_frameCount;
 };
 
 

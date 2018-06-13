@@ -6,7 +6,9 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QDebug>
-
+#include "opencv2/core.hpp"
+#include "opencv2/highgui.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
 extern "C"
 {
@@ -74,21 +76,23 @@ static bool parserFileName(std::string filename, FrameInfo &info)
 
     return true;
 }
-static bool ffmpegTryOpen(std::string filename, FrameInfo &info)
+static bool tryOpen(std::string filename, FrameInfo &info)
 {
-    av_register_all();
-    AVFormatContext* pFormatCtx = avformat_alloc_context();
-    AVOutputFormat* format = av_guess_format(NULL, filename.c_str(), NULL);
-    if( format == NULL )
+    cv::Mat img;// = cv::imread(filename.c_str());
+    if( img.empty() )
     {
-        printf("av_find_input_format failed.\n");
-        return false;
+        cv::VideoCapture capture;
+        capture.open(filename.c_str());
+        int frames = capture.get(CV_CAP_PROP_FRAME_COUNT);
+        if( frames == 0 )
+        {
+            return false;
+        }
+        printf("frames:%f\n", frames);
+        capture.read(img);
     }
-    printf("mime:%s codec:%p extensions:%s\n", format->mime_type, format->codec_tag, format->extensions);
-    if (avio_open(&pFormatCtx->pb, filename.c_str(), AVIO_FLAG_READ_WRITE) < 0)
-    {
-        printf("Couldn't open output file.\n");
-    }
+
+    printf("img width:%d height:%d\n", img.cols, img.rows);
     return true;
 }
 
@@ -359,7 +363,7 @@ IImage *IImage::createImage(std::string filename)
     {
         return IImage::createImage(filename, info.width, info.height, info.color);
     }
-    else if( ffmpegTryOpen(filename, info) )
+    else if(tryOpen(filename, info) )
     {
         return new CEncodingImage(filename);
     }
