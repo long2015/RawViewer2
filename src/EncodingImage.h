@@ -19,10 +19,13 @@
 #include <opencv2/videoio.hpp>
 #include "image.h"
 
-class CEncodingImage : public IImage
+class CEncodingImageFile : public IImageFile
 {
 public:
-    CEncodingImage(std::string filename);
+    static bool isSupport(std::string filename, std::string extName);
+
+public:
+    CEncodingImageFile(std::string filename);
 
     virtual bool open();
     virtual bool close();

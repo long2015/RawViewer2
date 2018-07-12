@@ -19,11 +19,16 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 
-CEncodingImage::CEncodingImage(std::string filename)
+bool CEncodingImageFile::isSupport(std::string filename, std::string extName)
+{
+    return false;
+}
+
+CEncodingImageFile::CEncodingImageFile(std::string filename)
 {
     m_filename = filename;
 }
-bool CEncodingImage::open()
+bool CEncodingImageFile::open()
 {
     m_mat = cv::imread(m_filename.c_str());
     if( !m_mat.empty() )
@@ -44,25 +49,29 @@ bool CEncodingImage::open()
     }
 
     printf("img width:%d height:%d\n", m_mat.cols, m_mat.rows);
-    m_frame = CFrame(m_mat.cols, m_mat.rows, AV_PIX_FMT_BGR24);
+    m_frame = CFrame(m_mat.cols, m_mat.rows, RV_COLOR_SPACE_RGB24);
 
     return true;
 }
-bool CEncodingImage::close()
+
+bool CEncodingImageFile::close()
 {
     return false;
 }
-bool CEncodingImage::getFrameInfo(FrameInfo &info)
+
+bool CEncodingImageFile::getFrameInfo(FrameInfo &info)
 {
     info = m_frame.info;
 
     return true;
 }
-int CEncodingImage::getFrameCount()
+
+int CEncodingImageFile::getFrameCount()
 {
     return m_frameCount;
 }
-int CEncodingImage::getFrame(int nframe, CFrame &frame)
+
+int CEncodingImageFile::getFrame(int nframe, CFrame &frame)
 {
     if( nframe >= m_frameCount )
         return -1;

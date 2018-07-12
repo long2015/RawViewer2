@@ -15,12 +15,6 @@
 #include <QClipboard>
 #include "RawImage.h"
 
-
-extern "C"
-{
-#include "libavutil/pixfmt.h"
-}
-
 CImageWindow::CImageWindow(QString filename, QWidget *parent) :
     QMainWindow(parent), m_mode(VIEW_MODE),
     ui(new Ui::frame)
@@ -35,14 +29,11 @@ CImageWindow::CImageWindow(QString filename, QWidget *parent) :
     createToolBar();
     createRightMenu();
 
-    m_image = IImage::createImage(filename.toStdString());
+    m_image = IImageFile::createImage(filename.toStdString());
     if( m_image == NULL )
     {
-        //dialog to get width, height, color
-        int width = 0;
-        int height = 0;
-        int color = 0;
-        m_image = IImage::createImage(filename.toStdString(), width, height, color);
+        qDebug("createImage failed. filename:%s\n",filename.toStdString().c_str());
+        return;
     }
 
     // load file

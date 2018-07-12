@@ -6,9 +6,6 @@ set(CMAKE_AUTOMOC ON)
 set(INCLUDE_DIR ${INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 set(INCLUDE_DIR ${INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
 
-# ffmpeg
-set(INCLUDE_DIR ${INCLUDE_DIR} 3rdparty/ffmpeg/include)
-link_directories(3rdparty/ffmpeg/lib)
 
 # set Qt path
 if(WIN32)
@@ -34,7 +31,7 @@ add_definitions(${MACROS_DEFINE})
 include_directories(${INCLUDE_DIR})
 
 add_executable(RawViewer2 ${SRC_FILES} ${UI_FILES} ui/myRC.rc ${RESOURCE_ADDED} src/EncodingImage.cpp src/EncodingImage.h)
-target_link_libraries(RawViewer2 swscale avformat avcodec avutil opencv_videoio opencv_imgcodecs opencv_core)
+target_link_libraries(RawViewer2 opencv_videoio opencv_imgcodecs opencv_core)
 
 qt5_use_modules(RawViewer2 Widgets)
 

@@ -67,7 +67,7 @@ private:
     QMenu*       m_popMenu;
     QMenu*       m_cutAreaMenu;
 
-    IImage*     m_image;
+    IImageFile*     m_image;
     FrameInfo   m_frameInfo;
     int         m_frameCnt;
     int         m_frameId;

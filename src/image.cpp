@@ -9,23 +9,35 @@
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
+#include <map>
 
-extern "C"
-{
-#include <libavutil/imgutils.h>
-#include <libavutil/parseutils.h>
-#include <libswscale/swscale.h>
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-}
+std::map<std::string, int> g_supportExtName;
 
-static bool is_float(int color)
+void Init()
 {
-    return color == AV_PIX_FMT_RGB24_FLOAT || color == AV_PIX_FMT_BGR24_FLOAT || color == AV_PIX_FMT_RGB24P_FLOAT;
-}
-static bool is_fp16(int color)
-{
-    return color == AV_PIX_FMT_RGB24_FP16 || color == AV_PIX_FMT_BGR24_FP16 || color == AV_PIX_FMT_RGB24P_FP16;
+    g_supportExtName["bmp"] = RV_FILE_TYPE_BMP;
+    g_supportExtName["png"] = RV_FILE_TYPE_PNG;
+    g_supportExtName["jpg"] = RV_FILE_TYPE_JPG;
+    g_supportExtName["gif"] = RV_FILE_TYPE_GIF;
+    g_supportExtName["avi"] = RV_FILE_TYPE_AVI;
+
+    g_supportExtName["rgb24"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["bgr24"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["rgb24p"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["rgb24_fp16"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["bgr24_fp16"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["rgb24p_fp16"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["rgb24_float"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["bgr24_float"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["rgb24p_float"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["yuv420"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["i420"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["nv12"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["yuv420sp"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["nv21"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["yuv420sp_vu"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["gray"] = RV_FILE_TYPE_RAW;
+    g_supportExtName["y"] = RV_FILE_TYPE_RAW;
 }
 
 static unsigned char float_to_char(float value, float min, float max)
@@ -45,37 +57,7 @@ static unsigned char float_to_char(float value, float min, float max)
 
     return c;
 }
-static bool parserFileName(std::string filename, FrameInfo &info)
-{
-    QRegExp exp(".*_([0-9]+)x([0-9]+).([a-zA-Z0-9_]+)");
-    bool match = exp.exactMatch(filename.c_str());
 
-    if( !match )
-    {
-        qDebug() << "parser filename failed." << exp.capturedTexts();
-        return false;
-    }
-
-    int width = exp.cap(1).toInt();
-    int height = exp.cap(2).toInt();
-    std::string color_str = exp.cap(3).toStdString();
-
-    printf("width:%d height:%d color:%s\n", width, height, color_str.c_str());
-
-    int color_space = toColor(color_str);
-    if( color_space == AV_PIX_FMT_NONE )
-    {
-        printf("parser error. PIX_FMT_NONE\n");
-        return false;
-    }
-
-    info.width = width;
-    info.height = height;
-    info.color = color_space;
-    info.dataType = 1;
-
-    return true;
-}
 static bool tryOpen(std::string filename, FrameInfo &info)
 {
     cv::Mat img;// = cv::imread(filename.c_str());
@@ -105,110 +87,66 @@ std::string toColorStr(int color)
 
 int toColor(std::string color_str)
 {
-    AVPixelFormat color_space = av_get_pix_fmt(color_str.c_str());
-    if( color_space == AV_PIX_FMT_NONE )
-    {
-        if (std::string("i420") == color_str)
-        {
-            color_space = AV_PIX_FMT_YUV420P;
-        }
-        else if( std::string("rgb24p") == color_str )
-        {
-            color_space = AVPixelFormat(AV_PIX_FMT_RGB24P);
-        }
-        else if( std::string("rgb24p_float") == color_str )
-        {
-            color_space = AVPixelFormat(AV_PIX_FMT_RGB24P_FLOAT);
-        }
-        else if( std::string("rgb24_float") == color_str )
-        {
-            color_space = AVPixelFormat(AV_PIX_FMT_RGB24_FLOAT);
-        }
-        else if( std::string("bgr24_float") == color_str )
-        {
-            color_space = AVPixelFormat(AV_PIX_FMT_BGR24_FLOAT);
-        }
-        else
-        {
-            printf("Not support color space:%s\n", color_str.c_str());
-            return AV_PIX_FMT_NONE;
-        }
-    }
-
-    return color_space;
+    return RV_COLOR_SPACE_RGB24;
 }
 
-static int image_get_buffer_size(int width, int height, int color, int align)
+static int image_get_buffer_size(int width, int height, int color_space, int align)
 {
-    if( color == AV_PIX_FMT_RGB24P )
+    if( color_space == RV_COLOR_SPACE_RGB24 )
     {
         return width*height*3;
     }
-    else if( is_float(color) )
+    else if( color_space == RV_COLOR_SPACE_RGB24_FLOAT )
     {
         return width*height*3* sizeof(float);
     }
+    else if( color_space == RV_COLOR_SPACE_RGB24P )
+    {
+        return width*height*3;
+    }
     else
     {
-        return av_image_get_buffer_size((AVPixelFormat)color, width, height, align);
+        printf("[%s] Not support color:%d\n", color_space);
     }
 }
 
-static int image_alloc(uint8_t *pointers[4], int linesizes[4],
-    int w, int h, enum AVPixelFormat pix_fmt, int align)
+static int image_alloc(void *pointers[4], int linesizes[4],
+    int w, int h, int color_space, int align)
 {
     memset(pointers, 0, sizeof(pointers));
-    if( pix_fmt == AV_PIX_FMT_RGB24P )
+    if( color_space == RV_COLOR_SPACE_RGB24P )
     {
         pointers[0] = (uint8_t*)malloc(w*h*3);
         pointers[1] = pointers[0] + w*h;
         pointers[2] = pointers[1] + w*h;
     }
-    else if( is_float(pix_fmt) )
+    else if( color_space == RV_COLOR_SPACE_RGB24 )
     {
-        if( pix_fmt == AV_PIX_FMT_RGB24_FLOAT || pix_fmt == AV_PIX_FMT_BGR24_FLOAT )
-        {
-            pointers[0] = (uint8_t*)malloc(w*h*3*sizeof(float));
-        }
-        else if( pix_fmt == AV_PIX_FMT_RGB24P_FLOAT )
-        {
-            pointers[0] = (uint8_t*)malloc(w*h*3*sizeof(float));
-            pointers[1] = pointers[0] + w*h*sizeof(float);
-            pointers[2] = pointers[1] + w*h*sizeof(float);
-        }
+        pointers[0] = (uint8_t*)malloc(w*h*3);
     }
     else
     {
-        return av_image_alloc(pointers, linesizes, w, h, (AVPixelFormat)pix_fmt, align);
+        printf("[%s] Not support color:%d\n", color_space);
     }
 }
 
-static void image_copy(uint8_t *dst_data[4], int dst_linesizes[4],
+static void image_copy(void *dst_data[4], int dst_linesizes[4],
     const uint8_t *src_data[4], const int src_linesizes[4],
-    enum AVPixelFormat pix_fmt, int width, int height)
+    int color_space, int width, int height)
 {
-    if( pix_fmt == AV_PIX_FMT_RGB24P )
+    if( color_space == RV_COLOR_SPACE_RGB24P )
     {
         memcpy(dst_data[0], src_data[0], width*height);
         memcpy(dst_data[1], src_data[1], width*height);
         memcpy(dst_data[2], src_data[2], width*height);
     }
-    else if( is_float(pix_fmt) )
+    else if( color_space == RV_COLOR_SPACE_RGB24 )
     {
-        if( pix_fmt == AV_PIX_FMT_RGB24_FLOAT || pix_fmt == AV_PIX_FMT_BGR24_FLOAT )
-        {
-            memcpy(dst_data[0], src_data[0], width*height*3*sizeof(float));
-        }
-        else if( pix_fmt == AV_PIX_FMT_RGB24P_FLOAT )
-        {
-            memcpy(dst_data[0], src_data[0], width*height*sizeof(float));
-            memcpy(dst_data[1], src_data[1], width*height*sizeof(float));
-            memcpy(dst_data[2], src_data[2], width*height*sizeof(float));
-        }
+        memcpy(dst_data[0], src_data[0], width*height*3);
     }
     else
     {
-        return av_image_copy(dst_data, dst_linesizes, src_data, src_linesizes, pix_fmt, width, height);
+        printf("[%s] Not support color:%d\n", color_space);
     }
 }
 
@@ -219,21 +157,30 @@ CFrame::CFrame()
 
 CFrame::CFrame(FrameInfo info)
 {
-    CFrame(info.width, info.height, info.color);
+    init(info.width, info.height, info.color);
 }
 
 CFrame::CFrame(int width, int height, int color)
 {
+    init(width, height, color);
+}
+
+void CFrame::init(int width, int height, int color)
+{
     info.width = width;
     info.height = height;
     info.color = color;
-    info.dataType = is_float(color);
-    info.frameLen = image_get_buffer_size(width, height, color, 1);
+    info.dataType = RV_DATA_CHAR;
+    //TODO:: use function
+    info.frameLen = width*height*3;
 
     printf("CFrame::CFrame width:%d height:%d color:%d frameLen:%d\n", width, height, color, info.frameLen);
 
-    image_alloc(data, stride, width, height, (AVPixelFormat)color, 1);
-    image_alloc(dataRGB, strideRGB, width, height, AV_PIX_FMT_RGB24, 1);
+    data[0] = malloc(width*height*3);
+    stride[0] = width*3;
+
+    dataRGB[0] = (unsigned char*)malloc(width*height*3);
+    strideRGB[0] = width*3;
 
     printf("data %p %p %p %p\n", data[0], data[1], data[2], data[3]);
     printf("dataRGB %p %p %p %p\n", dataRGB[0], dataRGB[1], dataRGB[2], dataRGB[3]);
@@ -244,11 +191,11 @@ CFrame::CFrame(const CFrame &frame)
     printf("frame copy constructor\n");
 
     info = frame.info;
-    image_alloc(data, stride, info.width, info.height, (AVPixelFormat)info.color, 1);
+    image_alloc(data, stride, info.width, info.height, info.color, 1);
 
-    image_copy(data, stride, (const uint8_t **)frame.data, frame.stride, (AVPixelFormat)info.color, info.width, info.height);
+    image_copy(data, stride, (const uint8_t **)frame.data, frame.stride, info.color, info.width, info.height);
 
-    image_alloc(dataRGB, strideRGB, info.width, info.height, AV_PIX_FMT_RGB24, 1);
+    image_alloc((void**)dataRGB, strideRGB, info.width, info.height, RV_COLOR_SPACE_RGB24, 1);
 
     printf("data %p %p %p %p\n", data[0], data[1], data[2], data[3]);
     printf("dataRGB %p %p %p %p\n", dataRGB[0], dataRGB[1], dataRGB[2], dataRGB[3]);
@@ -264,7 +211,7 @@ void* CFrame::getRGBData(bool shift)
 {
     float min = 0;
     float max = 0;
-    if( is_float(info.color))
+    if( info.dataType == RV_DATA_FLOAT )
     {
         float *m_data_float = (float *) data[0];
         for(int i = 0; i < info.width * info.height * 3; ++i)
@@ -278,8 +225,17 @@ void* CFrame::getRGBData(bool shift)
         printf("min:%f max:%f\n", min, max);
     }
 
-    int ret = -1;
-    if( info.color == AV_PIX_FMT_RGB24P )
+    if( info.color == RV_COLOR_SPACE_RGB24 )
+    {
+        printf("RGB24\n");
+        unsigned char* _data = (unsigned char*)data[0];
+        unsigned char *rgb_data = (unsigned char *)dataRGB[0];
+        for(int i = 0; i < info.frameLen; ++i)
+        {
+            rgb_data[i] = _data[i];
+        }
+    }
+    else if( info.color == RV_COLOR_SPACE_RGB24P )
     {
         printf("RGB24P\n");
         unsigned char* _data = (unsigned char*)data[0];
@@ -291,7 +247,7 @@ void* CFrame::getRGBData(bool shift)
             rgb_data[3 * i + 2] = _data[i + info.width * info.height * 1];
         }
     }
-    else if( info.color == AV_PIX_FMT_RGB24_FLOAT )
+    else if( info.color == RV_COLOR_SPACE_RGB24_FLOAT )
     {
         float *data_float = (float *)data[0];
         unsigned char *rgb_data = (unsigned char *)dataRGB[0];
@@ -302,7 +258,7 @@ void* CFrame::getRGBData(bool shift)
             rgb_data[3 * i + 2] = float_to_char(data_float[3 * i + 2], min, max);
         }
     }
-    else if( info.color == AV_PIX_FMT_BGR24_FLOAT )
+    else if( info.color == RV_COLOR_SPACE_BGR24_FLOAT )
     {
         float *m_data_float = (float *)data[0];
         unsigned char *rgb_data = (unsigned char *)dataRGB[0];
@@ -313,7 +269,7 @@ void* CFrame::getRGBData(bool shift)
             rgb_data[3 * i + 2] = float_to_char(m_data_float[3 * i + 0], min, max);
         }
     }
-    else if( info.color == AV_PIX_FMT_RGB24P_FLOAT )
+    else if( info.color == RV_COLOR_SPACE_RGB24P_FLOAT )
     {
         printf("rgbpfffff %d %d\n", info.width, info.height);
         float *m_data_float = (float *)data[0];
@@ -330,51 +286,29 @@ void* CFrame::getRGBData(bool shift)
     }
     else
     {
-        int src_w = info.width;
-        int src_h = info.height;
-        AVPixelFormat src_pix_fmt = (AVPixelFormat) info.color;
-        int dst_w = info.width;
-        int dst_h = info.height;
-        AVPixelFormat dst_pix_fmt = AV_PIX_FMT_RGB24;
-
-        //convert
-        SwsContext *sws_ctx = sws_getContext(src_w, src_h, src_pix_fmt, dst_w, dst_h, dst_pix_fmt, SWS_BILINEAR, NULL, NULL,
-                                             NULL);
-        if( !sws_ctx )
-        {
-            fprintf(stderr, "Impossible to create scale context for the conversion "
-                            "fmt:%s s:%dx%d -> fmt:%s s:%dx%d\n", av_get_pix_fmt_name(src_pix_fmt), src_w, src_h,
-                    av_get_pix_fmt_name(dst_pix_fmt), dst_w, dst_h);
-
-            return NULL;
-        }
-        ret = sws_scale(sws_ctx, (const uint8_t *const *) data, stride, 0, src_h, dataRGB, strideRGB);
-        printf("ret:%d\n", ret);
-        sws_freeContext(sws_ctx);
     }
     return dataRGB[0];
 }
 
 
-IImage *IImage::createImage(std::string filename)
+IImageFile *IImageFile::createImage(std::string filename)
 {
-    FrameInfo info;
-    if( parserFileName(filename, info) )
+    std::string extName = "bgr24";
+    if( CEncodingImageFile::isSupport(filename, extName) )
     {
-        return IImage::createImage(filename, info.width, info.height, info.color);
+        return new CEncodingImageFile(filename);
     }
-    else if(tryOpen(filename, info) )
+    else if( CRawImageFile::isSupport(filename, extName) )
     {
-        return new CEncodingImage(filename);
+        return new CRawImageFile(filename);
     }
-    else
-    {
-        printf("[%s] parser filename:%s error.\n", __FUNCTION__, filename.c_str());
-        return NULL;
-    }
+
+    printf("[%s] parser filename:%s error.\n", __FUNCTION__, filename.c_str());
+
+    return NULL;
 }
 
-IImage *IImage::createImage(std::string filename, int width, int height, int color)
+IImageFile *IImageFile::createImage(std::string filename, int width, int height, int color)
 {
-    return new CRawImage(filename, width, height, color);
+    return new CRawImageFile(filename, width, height, color);
 }

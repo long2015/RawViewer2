@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 #if 1
     QString filename = "/home/long2015/Code/Qt/RawViewer2/data/animal_256x256.bgr24";
+//    QString filename = "/home/long2015/Code/Qt/RawViewer2/data/tool.png";
     CImageWindow* pFrame = new CImageWindow(filename, this);
 
     QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
