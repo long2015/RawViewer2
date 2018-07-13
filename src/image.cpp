@@ -87,6 +87,15 @@ std::string toColorStr(int color)
 
 int toColor(std::string color_str)
 {
+    if( color_str == "rgb24" )
+    {
+        return RV_COLOR_SPACE_RGB24;
+    }
+    else if( color_str == "nv21" )
+    {
+        return RV_COLOR_SPACE_NV21;
+    }
+
     return RV_COLOR_SPACE_RGB24;
 }
 
@@ -237,7 +246,6 @@ void* CFrame::getRGBData(bool shift)
     }
     else if( info.color == RV_COLOR_SPACE_RGB24P )
     {
-        printf("RGB24P\n");
         unsigned char* _data = (unsigned char*)data[0];
         unsigned char *rgb_data = (unsigned char *)dataRGB[0];
         for(int i = 0; i < info.width * info.height; ++i)
@@ -286,6 +294,14 @@ void* CFrame::getRGBData(bool shift)
     }
     else
     {
+        cv::Mat srcData;
+        srcData.create(info.height, info.width*3/2, CV_8U);
+//        memcpy(srcData.data, data[0], info.width*info.height*sizeof(unsigned char));
+//        memcpy(srcData.data+info.width*info.height, data[1], info.width*info.height/2*sizeof(unsigned char));
+
+        cv::Mat dstData(info.height, info.width*3, CV_8U);
+        cv::cvtColor(srcData, dstData, CV_YUV2RGB_NV21);
+        printf("type:%d\n", dstData.type());
     }
     return dataRGB[0];
 }
@@ -293,22 +309,37 @@ void* CFrame::getRGBData(bool shift)
 
 IImageFile *IImageFile::createImage(std::string filename)
 {
-    std::string extName = "bgr24";
-    if( CEncodingImageFile::isSupport(filename, extName) )
+    std::string extName;
+    QString name = filename.c_str();
+    QStringList list = name.split(".");
+    if( list.size() >= 2 )
     {
-        return new CEncodingImageFile(filename);
-    }
-    else if( CRawImageFile::isSupport(filename, extName) )
-    {
-        return new CRawImageFile(filename);
+        extName = list.back().toStdString();
+
+        if( CEncodingImageFile::isSupport(filename, extName) )
+        {
+            return new CEncodingImageFile(filename);
+        }
+        else if( CRawImageFile::isSupport(filename, extName) )
+        {
+            return new CRawImageFile(filename);
+        }
     }
 
-    printf("[%s] parser filename:%s error.\n", __FUNCTION__, filename.c_str());
-
+    printf("[%s] filename:%s error.\n", __FUNCTION__, filename.c_str());
     return NULL;
 }
 
-IImageFile *IImageFile::createImage(std::string filename, int width, int height, int color)
+bool IImageFile::isSupport(std::string filename)
 {
-    return new CRawImageFile(filename, width, height, color);
+    IImageFile* pImageFile = IImageFile::createImage(filename);
+    if( pImageFile )
+    {
+        delete pImageFile;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }

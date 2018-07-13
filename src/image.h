@@ -91,7 +91,7 @@ class IImageFile
 {
 public:
     static IImageFile* createImage(std::string filename);
-    static IImageFile* createImage(std::string filename, int width, int height, int color);
+    static bool isSupport(std::string filename);
 
     virtual bool open() = 0;
     virtual bool close() = 0;

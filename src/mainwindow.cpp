@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "ImageWindow.h"
+#include "image.h"
 #include <QMimeData>
 #include <QDebug>
 #include <QtWidgets/QMdiSubWindow>
@@ -20,22 +21,29 @@ MainWindow::MainWindow(QWidget *parent) :
 #if 1
     QString filename = "/home/long2015/Code/Qt/RawViewer2/data/animal_256x256.bgr24";
 //    QString filename = "/home/long2015/Code/Qt/RawViewer2/data/tool.png";
-    CImageWindow* pFrame = new CImageWindow(filename, this);
-
-    QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
-    //删除系统菜单
-    QList<QAction*> actionList = subWindow->systemMenu()->actions();
-    for (int i = 0; i < actionList.size(); ++i)
+    if( !IImageFile::isSupport(filename.toStdString()) )
     {
-        subWindow->systemMenu()->removeAction(actionList[i]);
+        QMessageBox::information(this, tr(""), tr("Quit ?"), QMessageBox::Yes);
     }
-    //设置图标
-    subWindow->setWindowIcon(QIcon(":/logo.png"));
+    else
+    {
+        CImageWindow* pFrame = new CImageWindow(filename, this);
 
-    int width = pFrame->size().width() + 8;
-    int height = pFrame->size().height() + 28;
-    subWindow->resize(width, height);
-    subWindow->show();
+        QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
+        //删除系统菜单
+        QList<QAction*> actionList = subWindow->systemMenu()->actions();
+        for (int i = 0; i < actionList.size(); ++i)
+        {
+            subWindow->systemMenu()->removeAction(actionList[i]);
+        }
+        //设置图标
+        subWindow->setWindowIcon(QIcon(":/logo.png"));
+
+        int width = pFrame->size().width() + 8;
+        int height = pFrame->size().height() + 28;
+        subWindow->resize(width, height);
+        subWindow->show();
+    }
 #endif
 }
 
@@ -49,22 +57,29 @@ void MainWindow::dropEvent(QDropEvent *event)
     QString filename = event->mimeData()->urls()[0].toLocalFile();
     qDebug("filename:%s\n", filename.toStdString().c_str());
 
-    CImageWindow* pFrame = new CImageWindow(filename, this);
-
-    QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
-    //删除系统菜单
-    QList<QAction*> actionList = subWindow->systemMenu()->actions();
-    for (int i = 0; i < actionList.size(); ++i)
+    if( !IImageFile::isSupport(filename.toStdString()) )
     {
-        subWindow->systemMenu()->removeAction(actionList[i]);
+        QMessageBox::information(this, tr(""), tr("Open failed. Maybe Not support it."), QMessageBox::Ok);
     }
-    //设置图标
-    subWindow->setWindowIcon(QIcon(":/logo.png"));
+    else
+    {
+        CImageWindow* pFrame = new CImageWindow(filename, this);
 
-    int width = pFrame->size().width() + 8;
-    int height = pFrame->size().height() + 28;
-    subWindow->resize(width, height);
-    subWindow->show();
+        QMdiSubWindow* subWindow = ui->mdiArea->addSubWindow(pFrame);
+        //删除系统菜单
+        QList<QAction*> actionList = subWindow->systemMenu()->actions();
+        for (int i = 0; i < actionList.size(); ++i)
+        {
+            subWindow->systemMenu()->removeAction(actionList[i]);
+        }
+        //设置图标
+        subWindow->setWindowIcon(QIcon(":/logo.png"));
+
+        int width = pFrame->size().width() + 8;
+        int height = pFrame->size().height() + 28;
+        subWindow->resize(width, height);
+        subWindow->show();
+    }
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
