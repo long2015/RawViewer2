@@ -95,30 +95,43 @@ int toColor(std::string color_str)
     {
         return RV_COLOR_SPACE_NV21;
     }
+    else if( color_str == "i420" )
+    {
+        return RV_COLOR_SPACE_I420;
+    }
 
     return RV_COLOR_SPACE_RGB24;
 }
 
-static int image_get_buffer_size(int width, int height, int color_space, int align)
+int getFrameLen(int width, int height, int color)
 {
-    if( color_space == RV_COLOR_SPACE_RGB24 )
+    switch (color)
     {
-        return width*height*3;
-    }
-    else if( color_space == RV_COLOR_SPACE_RGB24_FLOAT )
-    {
-        return width*height*3* sizeof(float);
-    }
-    else if( color_space == RV_COLOR_SPACE_RGB24P )
-    {
-        return width*height*3;
-    }
-    else
-    {
-        printf("[%s] Not support color:%d\n", color_space);
+        case RV_COLOR_SPACE_RGB24:
+            return width*height*3;
+        case RV_COLOR_SPACE_NV21:
+        case RV_COLOR_SPACE_I420:
+            return width*height*3/2;
+        default:
+            printf("not support color:%d\n", color);
+            return 0;
     }
 }
-
+int toCvCode(int color)
+{
+    switch (color)
+    {
+        case RV_COLOR_SPACE_NV21:
+            return CV_YUV2RGB_NV21;
+        case RV_COLOR_SPACE_NV12:
+            return CV_YUV2RGB_NV12;
+        case RV_COLOR_SPACE_I420:
+            return CV_YUV2RGB_I420;
+        default:
+            printf("Not support color:%d\n", color);
+            assert(0);
+    }
+}
 static int image_alloc(void *pointers[4], int linesizes[4],
     int w, int h, int color_space, int align)
 {
@@ -180,12 +193,11 @@ void CFrame::init(int width, int height, int color)
     info.height = height;
     info.color = color;
     info.dataType = RV_DATA_CHAR;
-    //TODO:: use function
-    info.frameLen = width*height*3;
+    info.frameLen = getFrameLen(width, height, color);
 
     printf("CFrame::CFrame width:%d height:%d color:%d frameLen:%d\n", width, height, color, info.frameLen);
 
-    data[0] = malloc(width*height*3);
+    data[0] = malloc(info.frameLen);
     stride[0] = width*3;
 
     dataRGB[0] = (unsigned char*)malloc(width*height*3);
@@ -200,11 +212,9 @@ CFrame::CFrame(const CFrame &frame)
     printf("frame copy constructor\n");
 
     info = frame.info;
-    image_alloc(data, stride, info.width, info.height, info.color, 1);
+    init(info.width, info.height, info.color);
 
-    image_copy(data, stride, (const uint8_t **)frame.data, frame.stride, info.color, info.width, info.height);
-
-    image_alloc((void**)dataRGB, strideRGB, info.width, info.height, RV_COLOR_SPACE_RGB24, 1);
+    memcpy(data[0], frame.data[0], info.frameLen);
 
     printf("data %p %p %p %p\n", data[0], data[1], data[2], data[3]);
     printf("dataRGB %p %p %p %p\n", dataRGB[0], dataRGB[1], dataRGB[2], dataRGB[3]);
@@ -295,13 +305,25 @@ void* CFrame::getRGBData(bool shift)
     else
     {
         cv::Mat srcData;
-        srcData.create(info.height, info.width*3/2, CV_8U);
-//        memcpy(srcData.data, data[0], info.width*info.height*sizeof(unsigned char));
-//        memcpy(srcData.data+info.width*info.height, data[1], info.width*info.height/2*sizeof(unsigned char));
+        srcData.create(info.height*3/2, info.width, CV_8U);
+        for (int i = 0; i < info.height*3/2; ++i)
+        {
+            uchar* tmp = srcData.ptr<uchar>(i);
+            memcpy(tmp, data[0] + i*info.width, info.width*sizeof(unsigned char));
+        }
 
         cv::Mat dstData(info.height, info.width*3, CV_8U);
-        cv::cvtColor(srcData, dstData, CV_YUV2RGB_NV21);
-        printf("type:%d\n", dstData.type());
+
+        int code = toCvCode(info.color);
+        cv::cvtColor(srcData, dstData, code);
+        cv::imwrite("dst.jpg", dstData);
+        for (int i = 0; i < info.height; ++i)
+        {
+            uchar* tmp = dstData.ptr<uchar>(i);
+            int lineLen = info.width*3;
+            memcpy(dataRGB[0]+i*lineLen, tmp, lineLen);
+        }
+        printf("finished.\n");
     }
     return dataRGB[0];
 }
