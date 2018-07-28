@@ -58,25 +58,6 @@ static unsigned char float_to_char(float value, float min, float max)
     return c;
 }
 
-static bool tryOpen(std::string filename, FrameInfo &info)
-{
-    cv::Mat img;// = cv::imread(filename.c_str());
-    if( img.empty() )
-    {
-        cv::VideoCapture capture;
-        capture.open(filename.c_str());
-        int frames = capture.get(CV_CAP_PROP_FRAME_COUNT);
-        if( frames == 0 )
-        {
-            return false;
-        }
-        printf("frames:%f\n", frames);
-        capture.read(img);
-    }
-
-    printf("img width:%d height:%d\n", img.cols, img.rows);
-    return true;
-}
 
 std::string toColorStr(int color)
 {
@@ -108,6 +89,7 @@ int getFrameLen(int width, int height, int color)
     switch (color)
     {
         case RV_COLOR_SPACE_RGB24:
+        case RV_COLOR_SPACE_BGR24:
             return width*height*3;
         case RV_COLOR_SPACE_NV21:
         case RV_COLOR_SPACE_I420:
@@ -117,6 +99,43 @@ int getFrameLen(int width, int height, int color)
             return 0;
     }
 }
+
+int cvMatToFrame(cv::Mat mat, CFrame& frame)
+{
+    int colorSpace = frame.info.color;
+    if( colorSpace != RV_COLOR_SPACE_RGB24 && colorSpace != RV_COLOR_SPACE_BGR24 )
+    {
+        printf("[%s] not support color space:%d\n", __FUNCTION__, colorSpace);
+    }
+
+    unsigned char* rgbData = (unsigned char*)frame.data[0];
+    for (int i = 0; i < frame.info.height; ++i)
+    {
+        for (int j = 0; j < frame.info.width; ++j)
+        {
+            int index = i*frame.stride[0] + 3*j;
+            rgbData[index + 0] = mat.at<cv::Vec3b>(i, j)[0];
+            rgbData[index + 1] = mat.at<cv::Vec3b>(i, j)[1];
+            rgbData[index + 2] = mat.at<cv::Vec3b>(i, j)[2];
+        }
+    }
+}
+
+int frameToCvMat(CFrame frame, cv::Mat& mat)
+{
+    int width = frame.info.width;
+    int height = frame.info.height;
+    int color_space = frame.info.color;
+    unsigned char* data = (unsigned char*)frame.data[0];
+
+    mat.create(height*3/2, width, CV_8UC1);
+    for (int i = 0; i < height*width*3/2; ++i)
+    {
+        mat.at<uchar>(i) = data[i];
+    }
+}
+
+
 int toCvCode(int color)
 {
     switch (color)
@@ -200,11 +219,7 @@ void CFrame::init(int width, int height, int color)
     data[0] = malloc(info.frameLen);
     stride[0] = width*3;
 
-    dataRGB[0] = (unsigned char*)malloc(width*height*3);
-    strideRGB[0] = width*3;
-
     printf("data %p %p %p %p\n", data[0], data[1], data[2], data[3]);
-    printf("dataRGB %p %p %p %p\n", dataRGB[0], dataRGB[1], dataRGB[2], dataRGB[3]);
 }
 
 CFrame::CFrame(const CFrame &frame)
@@ -215,9 +230,6 @@ CFrame::CFrame(const CFrame &frame)
     init(info.width, info.height, info.color);
 
     memcpy(data[0], frame.data[0], info.frameLen);
-
-    printf("data %p %p %p %p\n", data[0], data[1], data[2], data[3]);
-    printf("dataRGB %p %p %p %p\n", dataRGB[0], dataRGB[1], dataRGB[2], dataRGB[3]);
 }
 
 void* CFrame::getData(int index)
@@ -226,8 +238,12 @@ void* CFrame::getData(int index)
 }
 
 
-void* CFrame::getRGBData(bool shift)
+bool cvtColor(const CFrame srcFrame, CFrame& dstFrame)
 {
+    FrameInfo info = srcFrame.info;
+    void** data = (void**)srcFrame.data;
+    void** dataRGB = (void**)dstFrame.data;
+
     float min = 0;
     float max = 0;
     if( info.dataType == RV_DATA_FLOAT )
@@ -246,12 +262,22 @@ void* CFrame::getRGBData(bool shift)
 
     if( info.color == RV_COLOR_SPACE_RGB24 )
     {
-        printf("RGB24\n");
         unsigned char* _data = (unsigned char*)data[0];
         unsigned char *rgb_data = (unsigned char *)dataRGB[0];
         for(int i = 0; i < info.frameLen; ++i)
         {
             rgb_data[i] = _data[i];
+        }
+    }
+    else if( info.color == RV_COLOR_SPACE_BGR24 )
+    {
+        unsigned char* _data = (unsigned char*)data[0];
+        unsigned char *rgb_data = (unsigned char *)dataRGB[0];
+        for(int i = 0; i < info.width * info.height; ++i)
+        {
+            rgb_data[3*i +0] = _data[3*i+2];
+            rgb_data[3*i +1] = _data[3*i+1];
+            rgb_data[3*i +2] = _data[3*i+0];
         }
     }
     else if( info.color == RV_COLOR_SPACE_RGB24P )
@@ -304,25 +330,15 @@ void* CFrame::getRGBData(bool shift)
     }
     else
     {
-        cv::Mat srcData;
-        srcData.create(info.height*3/2, info.width, CV_8U);
-        for (int i = 0; i < info.height*3/2; ++i)
-        {
-            uchar* tmp = srcData.ptr<uchar>(i);
-            memcpy(tmp, data[0] + i*info.width, info.width*sizeof(unsigned char));
-        }
+        cv::Mat srcMat;
+        frameToCvMat(srcFrame, srcMat);
+        cv::Mat dstMat;
+        cv::cvtColor(srcMat, dstMat, toCvCode(info.color));
+        printf("row:%d col:%d\n", dstMat.rows, dstMat.cols);
+        cv::imwrite("dst.jpg", dstMat);
 
-        cv::Mat dstData(info.height, info.width*3, CV_8U);
-
-        int code = toCvCode(info.color);
-        cv::cvtColor(srcData, dstData, code);
-        cv::imwrite("dst.jpg", dstData);
-        for (int i = 0; i < info.height; ++i)
-        {
-            uchar* tmp = dstData.ptr<uchar>(i);
-            int lineLen = info.width*3;
-            memcpy(dataRGB[0]+i*lineLen, tmp, lineLen);
-        }
+        cvMatToFrame(dstMat, dstFrame);
+        
         printf("finished.\n");
     }
     return dataRGB[0];

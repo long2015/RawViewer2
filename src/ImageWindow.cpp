@@ -47,7 +47,10 @@ CImageWindow::CImageWindow(QString filename, QWidget *parent) :
 
     m_frameId = 0;
     m_image->getFrame(m_frameId, m_frame);
-    QImage image = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+    m_RGBFrame = CFrame(m_frameInfo.width, m_frameInfo.height, RV_COLOR_SPACE_RGB24);
+    cvtColor(m_frame, m_RGBFrame);
+
+    QImage image = QImage((uchar*)m_RGBFrame.getData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
     m_origPixmap = QPixmap::fromImage(image);
 
     m_slider->setRange(0, m_frameCnt-1);
@@ -114,7 +117,8 @@ void CImageWindow::sliderChanged(int value)
     m_frameId = value;
 
     m_image->getFrame(m_frameId, m_frame);
-    QImage image = QImage((uchar*)m_frame.getRGBData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
+    cvtColor(m_frame, m_RGBFrame);
+    QImage image = QImage((uchar*)m_RGBFrame.getData(), m_frameInfo.width, m_frameInfo.height, QImage::Format_RGB888);
     m_origPixmap = QPixmap::fromImage(image);
     scaledImage(size());
 

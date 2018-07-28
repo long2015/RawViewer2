@@ -21,13 +21,30 @@
 
 bool CEncodingImageFile::isSupport(std::string filename, std::string extName)
 {
-    return false;
+    cv::Mat img = cv::imread(filename.c_str());
+    if( img.empty() )
+    {
+        cv::VideoCapture capture;
+        capture.open(filename.c_str());
+        int frames = capture.get(CV_CAP_PROP_FRAME_COUNT);
+        if( frames == 0 )
+        {
+            printf("open failed. maybe not a picture or video.\n");
+            return false;
+        }
+        capture.read(img);
+    }
+
+    printf("img width:%d height:%d\n", img.cols, img.rows);
+
+    return true;
 }
 
 CEncodingImageFile::CEncodingImageFile(std::string filename)
 {
     m_filename = filename;
 }
+
 bool CEncodingImageFile::open()
 {
     m_mat = cv::imread(m_filename.c_str());
@@ -49,7 +66,7 @@ bool CEncodingImageFile::open()
     }
 
     printf("img width:%d height:%d\n", m_mat.cols, m_mat.rows);
-    m_frame = CFrame(m_mat.cols, m_mat.rows, RV_COLOR_SPACE_RGB24);
+    m_frame = CFrame(m_mat.cols/2*2, m_mat.rows/2*2, RV_COLOR_SPACE_BGR24);
 
     return true;
 }
@@ -82,7 +99,9 @@ int CEncodingImageFile::getFrame(int nframe, CFrame &frame)
         m_capture.set(CV_CAP_PROP_POS_FRAMES, nframe);
         m_capture.read(m_mat);
     }
-    memcpy(m_frame.data[0], m_mat.data, m_mat.cols*m_mat.rows*3);
+
+//    memcpy(m_frame.data[0], m_mat.data, m_mat.cols*m_mat.rows*3);
+    cvMatToFrame(m_mat, m_frame);
 
     frame = m_frame;
     return 0;

@@ -72,6 +72,7 @@ private:
     int         m_frameCnt;
     int         m_frameId;
     CFrame      m_frame;
+    CFrame      m_RGBFrame;
 
     QPixmap     m_origPixmap;
     QPixmap     m_scaledPixmap;

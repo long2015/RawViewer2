@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     resize(1100, 800);
     setAcceptDrops(true);
 
-#if 1
+#if 0
     QString filename = "/home/long2015/Code/Qt/RawViewer2/data/animal_256x256.bgr24";
 //    QString filename = "/home/long2015/Code/Qt/RawViewer2/data/tool.png";
     if( !IImageFile::isSupport(filename.toStdString()) )

@@ -72,9 +72,7 @@ public:
 
     //øΩ±¥ππ‘Ï
     CFrame(const CFrame& frame);
-
-    void* getData(int index);
-    void* getRGBData(bool shift = 0);
+    void* getData(int index = 0);
 
 public:
     FrameInfo info;
@@ -82,9 +80,6 @@ public:
 
     void* data[4];
     int stride[4];
-
-    unsigned char* dataRGB[4];
-    int strideRGB[4];
 };
 
 class IImageFile
@@ -101,5 +96,9 @@ public:
 //    virtual int exportPicture(std::string filename, int x, int y, int width, int height) = 0;
 //    virtual int exportVideo(std::string filename, int start, int end, int x, int y, int width, int height) = 0;
 };
+
+bool cvtColor(const CFrame srcFrame, CFrame& dstFrame);
+int cvMatToFrame(cv::Mat mat, CFrame& frame);
+int getFrameLen(int width, int height, int color);
 
 #endif //RAWVIEWER2_IIMAGE_H
